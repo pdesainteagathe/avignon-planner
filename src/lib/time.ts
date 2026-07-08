@@ -48,6 +48,19 @@ export function formatUpdated(iso?: string): string | null {
   return `${formatDay(ms)} à ${formatTime(ms)}`
 }
 
+/** Next scheduled auto-refresh (cron every N hours UTC), as a local label. */
+export function nextRefreshLabel(everyHoursUtc = 6): string {
+  const now = Date.now()
+  const d = new Date(now)
+  d.setUTCMinutes(0, 0, 0)
+  while (d.getTime() <= now || d.getUTCHours() % everyHoursUtc !== 0) {
+    d.setUTCHours(d.getUTCHours() + 1)
+  }
+  const ms = d.getTime()
+  const sameDay = new Date(ms).getDate() === new Date(now).getDate()
+  return sameDay ? formatTime(ms) : `${formatDay(ms)} ${formatTime(ms)}`
+}
+
 /** ISO date part ("2026-07-10") for grouping, in local time. */
 export function dayKey(ms: number): string {
   const d = new Date(ms)

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { PlanResult, UnscheduledReason } from '../lib/planning'
-import { formatDay, formatRange, formatTime } from '../lib/time'
+import { formatDay, formatRange, formatTime, nextRefreshLabel } from '../lib/time'
 import { isFillingUp, seatLabel, seatStatus } from '../lib/seats'
 import { toICS, toPlainText } from '../lib/export'
 import { REFRESH_URL } from '../config'
@@ -89,9 +89,16 @@ function Freshness({ updatedAt }: { updatedAt?: string | null }) {
       ) : (
         'Disponibilités : catalogue de démonstration'
       )}
+      {' · prochain rafraîchissement auto vers ~'}
+      <strong>{nextRefreshLabel()}</strong>
       {' · '}
-      <a href={REFRESH_URL} target="_blank" rel="noreferrer" title="Relance un scrape complet puis republie (~7 min)">
-        🔄 Rafraîchir
+      <a
+        href={REFRESH_URL}
+        target="_blank"
+        rel="noreferrer"
+        title="Forcer un scrape immédiat via GitHub Actions (bouton « Run workflow ») — réservé au propriétaire du dépôt"
+      >
+        🔄 Rafraîchir (admin seulement)
       </a>
     </p>
   )
