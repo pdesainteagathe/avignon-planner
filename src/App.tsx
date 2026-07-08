@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Catalog, PlannerSettings, PresenceWindow, WeightMode, WishItem } from './types'
 import { sampleCatalog } from './data/sampleCatalog'
 import { loadState, saveState } from './lib/storage'
@@ -24,7 +24,6 @@ export default function App() {
   const [step, setStep] = useState(
     initial.windows.length > 0 && initial.wishlist.length > 0 ? 3 : 0,
   )
-  const seededRef = useRef(false)
 
   // Load the real scraped catalog if present (public/catalog.json); else keep sample.
   useEffect(() => {
@@ -62,18 +61,6 @@ export default function App() {
 
   const loadFavorites = () =>
     setWishlist(favorites.map((showId) => ({ showId })))
-
-  // Auto-seed the wishlist from favourites when the stored one has no show that
-  // still exists in the current catalog (e.g. leftover demo entries). Runs once.
-  useEffect(() => {
-    if (seededRef.current || favorites.length === 0 || catalog.shows.length === 0) return
-    const catalogIds = new Set(catalog.shows.map((s) => s.id))
-    const validCount = wishlist.filter((w) => catalogIds.has(w.showId)).length
-    if (validCount === 0) {
-      seededRef.current = true
-      setWishlist(favorites.map((showId) => ({ showId })))
-    }
-  }, [favorites, catalog, wishlist])
 
   useEffect(() => {
     saveState({ windows, wishlist, settings, booked })
