@@ -1,5 +1,6 @@
 import type { PlanResult, UnscheduledReason } from '../lib/planning'
-import { formatDay, formatRange } from '../lib/time'
+import { formatDay, formatRange, formatTime } from '../lib/time'
+import { isFillingUp, seatLabel, seatStatus } from '../lib/seats'
 
 const REASON_LABEL: Record<UnscheduledReason, string> = {
   excluded: 'Désactivée',
@@ -59,6 +60,28 @@ export function PlanningView({ result }: Props) {
         </p>
       )}
 
+      {(() => {
+        const filling = result.scheduled.filter((it) => isFillingUp(it.seatsLeft))
+        if (filling.length === 0) return null
+        return (
+          <div className="banner urgent">
+            🎟️ <strong>Réserve vite</strong> — {filling.length} pièce
+            {filling.length > 1 ? 's se remplissent' : ' se remplit'} :
+            <ul className="urgent-list">
+              {filling.map((it) => (
+                <li key={it.perfId}>
+                  <span>{it.show.title}</span>
+                  <span className="seats critical">{it.seatsLeft} places</span>
+                  <span className="urgent-when">
+                    {formatDay(it.start)} {formatTime(it.start)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      })()}
+
       {result.days.length === 0 && (
         <p className="empty">Aucune pièce n’a pu être planifiée pour l’instant.</p>
       )}
@@ -73,6 +96,11 @@ export function PlanningView({ result }: Props) {
                   <span className="slot-time">{formatRange(it.start, it.end)}</span>
                   <span className="slot-title">
                     <span className="mini-rank">#{it.rank + 1}</span> {it.show.title}
+                    {seatLabel(it.seatsLeft) && (
+                      <span className={`seats ${seatStatus(it.seatsLeft)}`}>
+                        {seatLabel(it.seatsLeft)}
+                      </span>
+                    )}
                   </span>
                   <span className="slot-venue">{it.show.venue}</span>
                 </li>

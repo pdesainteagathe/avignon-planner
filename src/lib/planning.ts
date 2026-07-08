@@ -23,6 +23,7 @@ export interface ScheduledItem {
   end: number
   rank: number
   weight: number
+  seatsLeft?: number
 }
 
 export interface UnscheduledItem {
@@ -112,6 +113,7 @@ export function plan(
   const chosenShowIds = new Set(result.chosen.map((c) => c.showId))
   const scheduled: ScheduledItem[] = result.chosen.map((c) => {
     const show = byId.get(c.showId)!
+    const perf = show.performances.find((p) => p.id === c.perfId)
     return {
       show,
       perfId: c.perfId,
@@ -119,6 +121,7 @@ export function plan(
       end: c.end,
       rank: rankOf.get(c.showId)!,
       weight: c.weight,
+      seatsLeft: perf?.seatsLeft,
     }
   })
   scheduled.sort((a, b) => a.start - b.start)
