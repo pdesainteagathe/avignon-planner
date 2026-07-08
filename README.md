@@ -46,11 +46,17 @@ Catalogue peu volatil → crawl complet **rare**. Dispos volatiles → refresh
 
 👉 **https://pdesainteagathe.github.io/avignon-planner/**
 
-Hébergé sur GitHub Pages (branche `gh-pages`). Pour redéployer après un scrape
-ou une modif :
+Hébergé sur GitHub Pages (branche `gh-pages`).
+
+**Rafraîchissement automatique** : le workflow `.github/workflows/refresh.yml`
+scrape le catalogue complet et republie le site tout seul (cron 06:00/18:00 UTC),
+ou à la demande via **Actions → Run workflow** (le lien « 🔄 Rafraîchir » du
+footer de l'app y mène). L'app affiche la date du dernier scrape.
+
+Redéploiement manuel (après une modif de code) :
 
 ```bash
-npm run scrape:favorites   # (optionnel) rafraîchir catalogue + favoris
+npm run scrape:catalog     # (optionnel) rafraîchir le catalogue complet
 npm run deploy             # build + publie sur gh-pages
 ```
 
