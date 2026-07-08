@@ -3,6 +3,7 @@ import type { PlanResult, UnscheduledReason } from '../lib/planning'
 import { formatDay, formatRange, formatTime } from '../lib/time'
 import { isFillingUp, seatLabel, seatStatus } from '../lib/seats'
 import { toICS, toPlainText } from '../lib/export'
+import { REFRESH_URL } from '../config'
 
 function ExportButtons({ result }: { result: PlanResult }) {
   const [copied, setCopied] = useState(false)
@@ -73,13 +74,33 @@ const REASON_CLASS: Record<UnscheduledReason, string> = {
 
 interface Props {
   result: PlanResult | null
+  updatedAt?: string | null
 }
 
-export function PlanningView({ result }: Props) {
+function Freshness({ updatedAt }: { updatedAt?: string | null }) {
+  return (
+    <p className="freshness">
+      {updatedAt ? (
+        <>
+          Disponibilités des places à jour au <strong>{updatedAt}</strong>
+        </>
+      ) : (
+        'Disponibilités : catalogue de démonstration'
+      )}
+      {' · '}
+      <a href={REFRESH_URL} target="_blank" rel="noreferrer" title="Relance un scrape complet puis republie (~7 min)">
+        🔄 Rafraîchir
+      </a>
+    </p>
+  )
+}
+
+export function PlanningView({ result, updatedAt }: Props) {
   if (!result) {
     return (
       <section className="card planning">
         <h2>Planning proposé</h2>
+        <Freshness updatedAt={updatedAt} />
         <p className="empty">
           Renseigne tes créneaux et au moins une pièce pour générer un planning.
         </p>
@@ -97,6 +118,7 @@ export function PlanningView({ result }: Props) {
         <h2>Planning proposé</h2>
         {hasPlan && <ExportButtons result={result} />}
       </div>
+      <Freshness updatedAt={updatedAt} />
 
       <div className="score">
         <div className="score-head">

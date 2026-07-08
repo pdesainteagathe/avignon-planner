@@ -49,7 +49,11 @@ async function modeAvailability(ids, concurrency) {
       log(`[availability] échec ${show.title}: ${e.message}`)
     }
   })
-  catalog.generatedAt = new Date().toISOString().slice(0, 16)
+  // NOTE: do NOT touch `generatedAt` — it marks the last *full* scrape of the
+  // whole catalogue. A targeted refresh only freshens a few shows, so claiming
+  // the whole catalogue is fresh would mislead other users. We record the
+  // partial refresh separately instead.
+  catalog.favoritesRefreshedAt = new Date().toISOString().slice(0, 16)
   await mkdir(dirname(CATALOG_PATH), { recursive: true })
   await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8')
   log(`✓ dispos rafraîchies pour ${targets.length} spectacles`)

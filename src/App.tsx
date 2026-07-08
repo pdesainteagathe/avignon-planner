@@ -4,18 +4,7 @@ import { sampleCatalog } from './data/sampleCatalog'
 import { loadState, saveState } from './lib/storage'
 import { plan, type PlanResult } from './lib/planning'
 import type { VenueCoords } from './lib/travel'
-import { formatDay, formatTime } from './lib/time'
-
-const REFRESH_URL =
-  'https://github.com/pdesainteagathe/avignon-planner/actions/workflows/refresh.yml'
-
-/** Format the catalog's generatedAt (UTC ISO without tz) as local time. */
-function formatUpdated(iso?: string): string | null {
-  if (!iso) return null
-  const ms = Date.parse(iso.length === 16 ? `${iso}:00Z` : iso)
-  if (Number.isNaN(ms)) return null
-  return `${formatDay(ms)} à ${formatTime(ms)}`
-}
+import { formatUpdated } from './lib/time'
 import { PresenceEditor } from './components/PresenceEditor'
 import { CatalogBrowser } from './components/CatalogBrowser'
 import { Wishlist } from './components/Wishlist'
@@ -122,21 +111,12 @@ export default function App() {
           <Settings settings={settings} onChange={setSettings} />
         </div>
         <div className="col-planning">
-          <PlanningView result={result} />
+          <PlanningView result={result} updatedAt={formatUpdated(catalog.generatedAt)} />
         </div>
       </div>
 
       <footer className="app-footer">
-        {formatUpdated(catalog.generatedAt) && (
-          <>
-            Dispos à jour au <strong>{formatUpdated(catalog.generatedAt)}</strong> ·{' '}
-            <a href={REFRESH_URL} target="_blank" rel="noreferrer" title="Lance un scrape puis republie le site (~5 min)">
-              🔄 Rafraîchir
-            </a>
-            {' · '}
-          </>
-        )}
-        Festival Off 2026 (4–25 juillet)
+        Ta sélection est stockée dans ton navigateur · Festival Off 2026 (4–25 juillet)
       </footer>
     </div>
   )

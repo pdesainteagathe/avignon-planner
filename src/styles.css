@@ -334,6 +334,16 @@ input.search {
 .planning h2 {
   font-size: 1.15rem;
 }
+.freshness {
+  margin: 2px 0 14px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.freshness a {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
 .score {
   margin: 10px 0 16px;
 }

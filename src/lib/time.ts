@@ -40,6 +40,14 @@ export function formatRange(startMs: number, endMs: number): string {
   return `${formatTime(startMs)} – ${formatTime(endMs)}`
 }
 
+/** Format a scrape timestamp (UTC ISO "2026-07-08T12:54", no tz) as local time. */
+export function formatUpdated(iso?: string): string | null {
+  if (!iso) return null
+  const ms = Date.parse(iso.length === 16 ? `${iso}:00Z` : iso)
+  if (Number.isNaN(ms)) return null
+  return `${formatDay(ms)} à ${formatTime(ms)}`
+}
+
 /** ISO date part ("2026-07-10") for grouping, in local time. */
 export function dayKey(ms: number): string {
   const d = new Date(ms)

@@ -48,16 +48,16 @@ Catalogue peu volatil → crawl complet **rare**. Dispos volatiles → refresh
 
 Hébergé sur GitHub Pages (branche `gh-pages`).
 
-**Rafraîchissement automatique** (deux cadences, republication auto sur gh-pages) :
+**Rafraîchissement automatique** (partagé par tous les utilisateurs) : le
+workflow `.github/workflows/refresh.yml` scrape le catalogue complet (dispos +
+quotas de **toutes** les pièces, ~7 min) et republie sur gh-pages, **toutes les
+6 h** (cron) ou à la demande via **Actions → Run workflow** (le lien
+« 🔄 Rafraîchir » de l'app y mène).
 
-| Workflow | Contenu | Durée | Cadence |
-|---|---|---|---|
-| `refresh.yml` | catalogue complet (~1900 pièces) | ~7 min | 1×/jour (04:00 UTC) |
-| `refresh-favorites.yml` | dispos/quotas des favoris uniquement | ~1 min | toutes les 2 h |
-
-Les deux tournent aussi à la demande via **Actions → Run workflow** (le lien
-« 🔄 Rafraîchir » du footer de l'app y mène). L'app affiche la date du dernier
-scrape. Un groupe de concurrence partagé sérialise les publications.
+L'app affiche en clair, sous « Planning proposé », la date de ce dernier scrape
+complet (`catalog.generatedAt`) — la même donnée pour tout le monde. Ajuste la
+fréquence dans le `cron` si besoin (plus fréquent = plus de charge sur le site
+de l'Off).
 
 Redéploiement manuel (après une modif de code) :
 
