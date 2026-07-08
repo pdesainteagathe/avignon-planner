@@ -42,6 +42,21 @@ satisfaction totale. Les pièces non casées sont listées avec la raison
 Catalogue peu volatil → crawl complet **rare**. Dispos volatiles → refresh
 **ciblé sur les favoris**, fréquent. Voir [`scraper/README.md`](scraper/README.md).
 
+## En ligne
+
+👉 **https://pdesainteagathe.github.io/avignon-planner/**
+
+Hébergé sur GitHub Pages (branche `gh-pages`). Pour redéployer après un scrape
+ou une modif :
+
+```bash
+npm run scrape:favorites   # (optionnel) rafraîchir catalogue + favoris
+npm run deploy             # build + publie sur gh-pages
+```
+
+Le build embarque `public/catalog.json` et `public/favorites.json` : le site
+déployé fonctionne sans backend. Le `base` Pages est géré par `VITE_BASE`.
+
 ## Roadmap
 
 - **V1 (fait)** : saisie, catalogue, optimiseur, contrainte 30 min, dispos par pièce.

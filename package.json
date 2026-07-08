@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "scrape": "node scraper/scrape.mjs",
-    "scrape:favorites": "node scraper/addFavorites.mjs"
+    "scrape:favorites": "node scraper/addFavorites.mjs",
+    "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
