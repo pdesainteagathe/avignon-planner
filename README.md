@@ -51,7 +51,7 @@ Hébergé sur GitHub Pages (branche `gh-pages`).
 **Rafraîchissement automatique** (partagé par tous les utilisateurs) : le
 workflow `.github/workflows/refresh.yml` scrape le catalogue complet (dispos +
 quotas de **toutes** les pièces, ~7 min) et republie sur gh-pages, **toutes les
-6 h** (cron) ou à la demande via **Actions → Run workflow** (le lien
+3 h** (cron) ou à la demande via **Actions → Run workflow** (le lien
 « 🔄 Rafraîchir » de l'app y mène).
 
 L'app affiche en clair, sous « Planning proposé », la date de ce dernier scrape

@@ -90,7 +90,7 @@ function Freshness({ updatedAt }: { updatedAt?: string | null }) {
         'Disponibilités : catalogue de démonstration'
       )}
       {' · prochain rafraîchissement auto vers ~'}
-      <strong>{nextRefreshLabel()}</strong>
+      <strong>{nextRefreshLabel(3)}</strong>
       {' · '}
       <a
         href={REFRESH_URL}
