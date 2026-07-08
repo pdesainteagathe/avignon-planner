@@ -59,7 +59,7 @@ const REASON_LABEL: Record<UnscheduledReason, string> = {
   'sold-out': 'Vente clôturée / indisponible sur toutes les dates',
   quota: 'Quota Ticket’Off atteint (peut rester dispo au théâtre)',
   'outside-windows': 'Aucune représentation dans tes créneaux',
-  'no-performances': 'Pas de représentation au programme',
+  'no-performances': 'Pas de représentation possible sur Ticket’Off',
   conflict: 'Conflit d’horaire — écartée au profit de choix mieux classés',
 }
 

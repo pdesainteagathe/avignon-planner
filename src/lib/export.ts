@@ -6,7 +6,7 @@ const REASON_SHORT: Record<UnscheduledReason, string> = {
   'sold-out': 'vente clôturée',
   quota: 'quota en ligne atteint',
   'outside-windows': 'hors créneaux',
-  'no-performances': 'pas de représentation',
+  'no-performances': 'pas de représentation sur Ticket’Off',
   conflict: 'conflit horaire',
 }
 
