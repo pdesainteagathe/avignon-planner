@@ -176,21 +176,29 @@ function Settings({
       </div>
       <div className="setting-row">
         <span className="setting-label">Battements entre pièces</span>
-        <label className="check-row">
-          <input
-            type="checkbox"
-            checked={settings.travel.enabled}
-            onChange={(e) =>
-              onChange({ ...settings, travel: { ...settings.travel, enabled: e.target.checked } })
-            }
-          />
-          Selon le temps de marche entre théâtres (min {settings.travel.minBufferMin} min)
-        </label>
-        {!settings.travel.enabled && (
-          <label>
-            <span className="setting-label" style={{ marginTop: 8 }}>
-              Battement fixe
-            </span>
+        <div className="segmented">
+          <button
+            type="button"
+            className={settings.travel.enabled ? 'active' : ''}
+            onClick={() => onChange({ ...settings, travel: { ...settings.travel, enabled: true } })}
+          >
+            🚶 Temps de marche
+          </button>
+          <button
+            type="button"
+            className={!settings.travel.enabled ? 'active' : ''}
+            onClick={() => onChange({ ...settings, travel: { ...settings.travel, enabled: false } })}
+          >
+            ⏱️ Fixe
+          </button>
+        </div>
+        {settings.travel.enabled ? (
+          <p className="hint sub">
+            Battement = temps de marche réel entre théâtres (min {settings.travel.minBufferMin} min).
+          </p>
+        ) : (
+          <label className="inline-field">
+            Battement fixe :
             <select
               value={settings.bufferMin}
               onChange={(e) => onChange({ ...settings, bufferMin: Number(e.target.value) })}
