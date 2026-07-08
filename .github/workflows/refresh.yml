@@ -5,14 +5,14 @@ name: Rafraîchir les données & déployer
 # via le bouton "Run workflow".
 on:
   schedule:
-    - cron: '0 6,18 * * *' # 06:00 & 18:00 UTC (08:00 & 20:00 Paris)
+    - cron: '0 4 * * *' # 04:00 UTC (06:00 Paris) — 1×/jour, catalogue complet
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
 concurrency:
-  group: refresh
+  group: gh-pages-publish # partagé avec refresh-favorites pour sérialiser les deploys
   cancel-in-progress: false
 
 jobs:
