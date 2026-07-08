@@ -1,0 +1,73 @@
+import type { PresenceWindow } from '../types'
+
+interface Props {
+  windows: PresenceWindow[]
+  onChange: (windows: PresenceWindow[]) => void
+}
+
+function newId(): string {
+  return crypto.randomUUID()
+}
+
+export function PresenceEditor({ windows, onChange }: Props) {
+  const update = (id: string, patch: Partial<PresenceWindow>) =>
+    onChange(windows.map((w) => (w.id === id ? { ...w, ...patch } : w)))
+
+  const add = () => {
+    const last = windows[windows.length - 1]
+    onChange([
+      ...windows,
+      {
+        id: newId(),
+        date: last?.date ?? '2026-07-08',
+        start: '10:00',
+        end: '23:59',
+      },
+    ])
+  }
+
+  const remove = (id: string) => onChange(windows.filter((w) => w.id !== id))
+
+  return (
+    <section className="card">
+      <h2>1 · Mes créneaux de présence</h2>
+      <p className="hint">
+        Ajoute chaque jour où tu es à Avignon, avec l’heure d’arrivée et de départ.
+      </p>
+      {windows.length === 0 && (
+        <p className="empty">Aucun créneau pour l’instant.</p>
+      )}
+      <div className="window-list">
+        {windows.map((w) => (
+          <div className="window-row" key={w.id}>
+            <input
+              type="date"
+              value={w.date}
+              min="2026-07-04"
+              max="2026-07-25"
+              onChange={(e) => update(w.id, { date: e.target.value })}
+            />
+            <span className="from">de</span>
+            <input
+              type="time"
+              value={w.start}
+              onChange={(e) => update(w.id, { start: e.target.value })}
+            />
+            <span className="to">à</span>
+            <input
+              type="time"
+              value={w.end}
+              onChange={(e) => update(w.id, { end: e.target.value })}
+            />
+            <button className="icon-btn" title="Supprimer" onClick={() => remove(w.id)}>
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <button className="add-btn" onClick={add}>
+        + Ajouter un jour
+      </button>
+    </section>
+  )
+}
