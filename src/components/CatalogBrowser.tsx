@@ -9,6 +9,14 @@ interface Props {
 
 const PAGE = 60
 
+/** Lowercase + strip accents so "gemeaux" matches "GÉMEAUX", "chene" → "CHÊNE". */
+function norm(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+}
+
 function distinctTimes(iso: string[]): string {
   const times = new Set(iso.map((s) => s.slice(11, 16)))
   return [...times].sort().join(' · ')
@@ -21,15 +29,22 @@ export function CatalogBrowser({ catalog, wishlist, onAdd }: Props) {
     [wishlist],
   )
 
+  // Pre-compute a normalized haystack per show (title + venue + genre + company)
+  // once, so accent-insensitive filtering stays fast over ~1900 shows.
+  const index = useMemo(
+    () =>
+      catalog.shows.map((s) => ({
+        show: s,
+        hay: norm([s.title, s.company, s.genre, s.venue].filter(Boolean).join(' ')),
+      })),
+    [catalog],
+  )
+
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase()
+    const needle = norm(q.trim())
     if (!needle) return catalog.shows
-    return catalog.shows.filter((s) =>
-      [s.title, s.company, s.genre, s.venue]
-        .filter(Boolean)
-        .some((f) => f!.toLowerCase().includes(needle)),
-    )
-  }, [catalog, q])
+    return index.filter((e) => e.hay.includes(needle)).map((e) => e.show)
+  }, [index, q, catalog])
 
   const shown = filtered.slice(0, PAGE)
 
