@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "scrape": "node scraper/scrape.mjs",
     "scrape:favorites": "node scraper/addFavorites.mjs",
+    "scrape:venues": "node scraper/venues.mjs",
     "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {

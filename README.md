@@ -57,9 +57,19 @@ npm run deploy             # build + publie sur gh-pages
 Le build embarque `public/catalog.json` et `public/favorites.json` : le site
 déployé fonctionne sans backend. Le `base` Pages est géré par `VITE_BASE`.
 
+## Distances entre théâtres
+
+Le battement entre deux pièces = **temps de marche réel** entre leurs théâtres
+(coords lat/lng scrapées, `public/venues.json`), à allure tranquille (4,5 km/h),
+avec un plancher de 15 min et une marge d'accès. Repli sur un battement fixe
+pour les lieux sans coordonnées ou si le mode est désactivé. Régénérer :
+`npm run scrape:venues`.
+
 ## Roadmap
 
-- **V1 (fait)** : saisie, catalogue, optimiseur, contrainte 30 min, dispos par pièce.
-- **Scraper** : brancher les vrais sélecteurs sur le DOM live (mode `dump`).
-- **V2** : login espace client pour dispos perso (mini-backend) ; distances
-  entre théâtres dans la contrainte de battement ; export .ics / partage.
+- **Fait** : saisie, catalogue complet (~1900 pièces), optimiseur, dispos +
+  places restantes, pauses repas, distances entre théâtres, export texte/.ics,
+  déploiement Pages.
+- **Idées** : login espace client pour dispos perso (mini-backend) ;
+  rafraîchissement auto des dispos (cron) ; itinéraires réels (routing) au lieu
+  de la distance à vol d'oiseau.

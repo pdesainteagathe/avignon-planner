@@ -430,6 +430,9 @@ input.search {
   font-size: 0.8rem;
   font-weight: 700;
 }
+.walk {
+  color: var(--muted);
+}
 .slot-venue {
   grid-area: venue;
   font-size: 0.78rem;

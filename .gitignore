@@ -6,3 +6,4 @@ dist
 # Commit them only when you want the deployed site to ship with data baked in.
 public/catalog.json
 public/favorites.json
+public/venues.json

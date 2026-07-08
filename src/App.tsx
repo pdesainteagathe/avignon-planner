@@ -3,6 +3,7 @@ import type { Catalog, PlannerSettings, PresenceWindow, WeightMode, WishItem } f
 import { sampleCatalog } from './data/sampleCatalog'
 import { loadState, saveState } from './lib/storage'
 import { plan, type PlanResult } from './lib/planning'
+import type { VenueCoords } from './lib/travel'
 import { PresenceEditor } from './components/PresenceEditor'
 import { CatalogBrowser } from './components/CatalogBrowser'
 import { Wishlist } from './components/Wishlist'
@@ -15,6 +16,7 @@ export default function App() {
   const [wishlist, setWishlist] = useState<WishItem[]>(initial.wishlist)
   const [settings, setSettings] = useState<PlannerSettings>(initial.settings)
   const [favorites, setFavorites] = useState<string[]>([])
+  const [venues, setVenues] = useState<VenueCoords>({})
   const seededRef = useRef(false)
 
   // Load the real scraped catalog if present (public/catalog.json); else keep sample.
@@ -41,6 +43,16 @@ export default function App() {
       .catch(() => {})
   }, [])
 
+  // Load venue coordinates for distance-aware buffers (public/venues.json).
+  useEffect(() => {
+    fetch('venues.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && data.venues) setVenues(data.venues)
+      })
+      .catch(() => {})
+  }, [])
+
   const loadFavorites = () =>
     setWishlist(favorites.map((showId) => ({ showId })))
 
@@ -62,8 +74,8 @@ export default function App() {
 
   const result: PlanResult | null = useMemo(() => {
     if (windows.length === 0 || wishlist.length === 0) return null
-    return plan(catalog, wishlist, windows, settings)
-  }, [catalog, wishlist, windows, settings])
+    return plan(catalog, wishlist, windows, settings, venues)
+  }, [catalog, wishlist, windows, settings, venues])
 
   const addToWishlist = (showId: string) => {
     setWishlist((w) => (w.some((x) => x.showId === showId) ? w : [...w, { showId }]))
@@ -121,21 +133,6 @@ function Settings({
       <h2>4 · Réglages</h2>
       <div className="setting-row">
         <label>
-          Battement minimum entre deux pièces
-          <select
-            value={settings.bufferMin}
-            onChange={(e) => onChange({ ...settings, bufferMin: Number(e.target.value) })}
-          >
-            {[15, 20, 30, 45, 60].map((m) => (
-              <option key={m} value={m}>
-                {m} min
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="setting-row">
-        <label>
           Stratégie
           <select
             value={settings.weightMode}
@@ -145,6 +142,36 @@ function Settings({
             <option value="top-priority">Priorité à mes premiers choix</option>
           </select>
         </label>
+      </div>
+      <div className="setting-row">
+        <span className="setting-label">Battements entre pièces</span>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={settings.travel.enabled}
+            onChange={(e) =>
+              onChange({ ...settings, travel: { ...settings.travel, enabled: e.target.checked } })
+            }
+          />
+          Selon le temps de marche entre théâtres (min {settings.travel.minBufferMin} min)
+        </label>
+        {!settings.travel.enabled && (
+          <label>
+            <span className="setting-label" style={{ marginTop: 8 }}>
+              Battement fixe
+            </span>
+            <select
+              value={settings.bufferMin}
+              onChange={(e) => onChange({ ...settings, bufferMin: Number(e.target.value) })}
+            >
+              {[15, 20, 30, 45, 60].map((m) => (
+                <option key={m} value={m}>
+                  {m} min
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       <div className="setting-row">
         <span className="setting-label">Pauses réservées</span>

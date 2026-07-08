@@ -107,6 +107,24 @@ export function parsePerformances(html, defaultTime) {
   return perfs
 }
 
+/** Detail page URL (/spectacles/NNNN-slug) from a representations URL. */
+export function detailUrlFromTicket(ticketUrl) {
+  return ticketUrl ? ticketUrl.replace('/representations/', '/') : null
+}
+
+/**
+ * Venue coordinates from a show detail page. The venue's location is the
+ * "maps/search?query=lat,lng" link (distinct from the festival office's
+ * "maps/place/..." link). Returns null if absent.
+ */
+export function parseVenueCoords(html) {
+  const m = html.match(/maps\/search\/\?api=1&query=(-?\d+\.\d+),(-?\d+\.\d+)/)
+  if (!m) return null
+  const lat = parseFloat(m[1])
+  const lng = parseFloat(m[2])
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null
+}
+
 export async function pool(items, concurrency, worker) {
   const results = new Array(items.length)
   let next = 0

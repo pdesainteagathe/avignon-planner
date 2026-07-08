@@ -9,6 +9,7 @@ import type {
 import { addMinutes, dateTimeToMs, dayKey, isoToMs } from './time'
 import { optimize, type Candidate } from './optimizer'
 import { weightForRank } from './weights'
+import { travelBufferMin, walkMinutes, type TravelConfig, type VenueCoords } from './travel'
 
 export type UnscheduledReason =
   | 'excluded'
@@ -41,7 +42,7 @@ export interface BreakItem {
 }
 
 export type TimelineEntry =
-  | ({ kind: 'show' } & ScheduledItem)
+  | ({ kind: 'show'; walkFromPrevMin?: number } & ScheduledItem)
   | ({ kind: 'break' } & BreakItem)
 
 export interface DayGroup {
@@ -103,7 +104,9 @@ export function plan(
   wishlist: WishItem[],
   windows: PresenceWindow[],
   settings: PlannerSettings,
+  venues: VenueCoords = {},
 ): PlanResult {
+  const travelCfg: TravelConfig = { ...settings.travel, fallbackMin: settings.bufferMin }
   const byId = new Map(catalog.shows.map((s) => [s.id, s]))
   const included = wishlist.filter((w) => !w.excluded && byId.has(w.showId))
   const total = included.length
@@ -134,7 +137,7 @@ export function plan(
       const end = addMinutes(start, show.durationMin)
       if (!fitsAnyWindow(start, end, windowsMs)) continue
       anyFitting = true
-      candidates.push({ showId: show.id, perfId: perf.id, start, end, weight })
+      candidates.push({ showId: show.id, perfId: perf.id, start, end, weight, venueKey: show.venue })
     }
     if (!anyAvailable) blocked.set(show.id, 'sold-out')
     else if (!anyFitting) blocked.set(show.id, 'outside-windows')
@@ -143,7 +146,9 @@ export function plan(
   const { candidates: mealCands, labels: mealLabels } = mealCandidates(windows, settings.meals)
 
   const bufferMs = settings.bufferMin * 60_000
-  const result = optimize([...candidates, ...mealCands], bufferMs)
+  const gapMs = (a: Candidate, b: Candidate) =>
+    travelBufferMin(venues[a.venueKey ?? ''], venues[b.venueKey ?? ''], travelCfg) * 60_000
+  const result = optimize([...candidates, ...mealCands], bufferMs, { gapMs })
 
   const chosenShows = result.chosen.filter((c) => !c.isBreak)
   const chosenBreaks = result.chosen.filter((c) => c.isBreak)
@@ -182,14 +187,19 @@ export function plan(
   }
   unscheduled.sort((a, b) => (a.rank < 0 ? 1 : b.rank < 0 ? -1 : a.rank - b.rank))
 
-  const days = groupDays(scheduled, breaks)
+  const days = groupDays(scheduled, breaks, venues, settings.travel.walkSpeedKmh)
   const totalWeight = scheduled.reduce((s, it) => s + it.weight, 0)
   const maxWeight = included.reduce((s, _w, idx) => s + weightForRank(idx, total, settings.weightMode), 0)
 
   return { scheduled, breaks, unscheduled, days, totalWeight, maxWeight, approximate: result.approximate }
 }
 
-function groupDays(scheduled: ScheduledItem[], breaks: BreakItem[]): DayGroup[] {
+function groupDays(
+  scheduled: ScheduledItem[],
+  breaks: BreakItem[],
+  venues: VenueCoords,
+  walkSpeedKmh: number,
+): DayGroup[] {
   const map = new Map<string, TimelineEntry[]>()
   const push = (key: string, entry: TimelineEntry) => {
     if (!map.has(key)) map.set(key, [])
@@ -197,10 +207,21 @@ function groupDays(scheduled: ScheduledItem[], breaks: BreakItem[]): DayGroup[] 
   }
   for (const it of scheduled) push(dayKey(it.start), { kind: 'show', ...it })
   for (const b of breaks) push(dayKey(b.start), { kind: 'break', ...b })
+
   return [...map.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([dk, entries]) => ({
-      dayKey: dk,
-      entries: entries.sort((a, b) => a.start - b.start),
-    }))
+    .map(([dk, entries]) => {
+      entries.sort((a, b) => a.start - b.start)
+      // Annotate walking time between each show and the previous one that day.
+      let prevVenue: string | undefined
+      for (const e of entries) {
+        if (e.kind !== 'show') continue
+        if (prevVenue !== undefined) {
+          const w = walkMinutes(venues[prevVenue], venues[e.show.venue], walkSpeedKmh)
+          if (w !== undefined) e.walkFromPrevMin = Math.round(w)
+        }
+        prevVenue = e.show.venue
+      }
+      return { dayKey: dk, entries }
+    })
 }

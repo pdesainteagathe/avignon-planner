@@ -68,11 +68,31 @@ export interface MealBreak {
   enabled: boolean
 }
 
+/** Distance-aware buffering between venues (walking time). */
+export interface TravelSettings {
+  enabled: boolean
+  /** Unhurried walking speed (km/h). */
+  walkSpeedKmh: number
+  /** Floor for the buffer, even between adjacent venues (min). */
+  minBufferMin: number
+  /** Fixed overhead added to walking time (exit/enter/seat, min). */
+  marginMin: number
+}
+
 export interface PlannerSettings {
-  /** Minimum gap between two consecutive shows, in minutes. */
+  /** Gap between two shows when distance mode is off, and fallback for venues
+   * with unknown coordinates. In minutes. */
   bufferMin: number
   weightMode: WeightMode
   meals: MealBreak[]
+  travel: TravelSettings
+}
+
+export const DEFAULT_TRAVEL: TravelSettings = {
+  enabled: true,
+  walkSpeedKmh: 4.5,
+  minBufferMin: 15,
+  marginMin: 5,
 }
 
 export const DEFAULT_MEALS: MealBreak[] = [
@@ -84,4 +104,5 @@ export const DEFAULT_SETTINGS: PlannerSettings = {
   bufferMin: 30,
   weightMode: 'balanced',
   meals: DEFAULT_MEALS,
+  travel: DEFAULT_TRAVEL,
 }

@@ -164,7 +164,12 @@ export function PlanningView({ result }: Props) {
                         </span>
                       )}
                     </span>
-                    <span className="slot-venue">{entry.show.venue}</span>
+                    <span className="slot-venue">
+                      {entry.show.venue}
+                      {entry.walkFromPrevMin != null && (
+                        <span className="walk"> · 🚶 {entry.walkFromPrevMin} min</span>
+                      )}
+                    </span>
                   </li>
                 ),
               )}
