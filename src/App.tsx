@@ -182,7 +182,7 @@ function Settings({
             checked={settings.onlineOnly}
             onChange={(e) => onChange({ ...settings, onlineOnly: e.target.checked })}
           />
-          Exclure les séances « quota atteint · guichet » (garder seulement le réservable en ligne)
+          Exclure les séances « quota Ticket’Off atteint » (garder seulement le réservable en ligne sur Ticket’Off — elles peuvent rester dispo en direct au théâtre)
         </label>
       </div>
       <div className="setting-row">

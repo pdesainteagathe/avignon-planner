@@ -23,7 +23,7 @@ export function toPlainText(result: PlanResult): string {
       } else {
         const tag =
           e.status === 'quota'
-            ? '  🎫 quota atteint · guichet'
+            ? "  🎫 quota Ticket'Off atteint (voir au théâtre)"
             : e.seatsLeft && e.seatsLeft > 0 && e.seatsLeft <= 15
               ? `  ⚠️ ${e.seatsLeft} places`
               : ''
@@ -70,7 +70,7 @@ export function toICS(result: PlanResult): string {
   for (const it of result.scheduled) {
     const note =
       it.status === 'quota'
-        ? ' · quota en ligne atteint (guichet)'
+        ? " · quota Ticket'Off atteint (voir au théâtre)"
         : it.seatsLeft && it.seatsLeft > 0
           ? ` · ${it.seatsLeft} places restantes`
           : ''

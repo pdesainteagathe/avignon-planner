@@ -57,7 +57,7 @@ function ExportButtons({ result }: { result: PlanResult }) {
 const REASON_LABEL: Record<UnscheduledReason, string> = {
   excluded: 'Désactivée',
   'sold-out': 'Vente clôturée / indisponible sur toutes les dates',
-  quota: 'Quota en ligne atteint (guichet possible)',
+  quota: 'Quota Ticket’Off atteint (peut rester dispo au théâtre)',
   'outside-windows': 'Aucune représentation dans tes créneaux',
   'no-performances': 'Pas de représentation au programme',
   conflict: 'Conflit d’horaire — écartée au profit de choix mieux classés',
@@ -183,7 +183,9 @@ export function PlanningView({ result, updatedAt }: Props) {
                     <span className="slot-title">
                       <span className="mini-rank">#{entry.rank + 1}</span> {entry.show.title}
                       {entry.status === 'quota' ? (
-                        <span className="seats quota">🎫 quota atteint · guichet</span>
+                        <span className="seats quota" title="Quota en ligne Ticket'Off atteint — peut rester dispo directement au théâtre">
+                          🎫 quota Ticket'Off
+                        </span>
                       ) : (
                         seatLabel(entry.seatsLeft) && (
                           <span className={`seats ${seatStatus(entry.seatsLeft)}`}>
