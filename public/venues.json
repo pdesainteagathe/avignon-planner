@@ -1,0 +1,489 @@
+{
+  "generatedAt": "2026-07-08T10:29",
+  "venues": {
+    "ALBATROS (THÉÂTRE)": {
+      "lat": 43.945334,
+      "lng": 4.8129
+    },
+    "AL ANDALUS": {
+      "lat": 43.947268,
+      "lng": 4.811111
+    },
+    "CADENCIA (LE)": {
+      "lat": 43.948325,
+      "lng": 4.810781
+    },
+    "ALYA, L'ESPACE": {
+      "lat": 43.947753,
+      "lng": 4.814391
+    },
+    "TREMPLIN": {
+      "lat": 43.94682,
+      "lng": 4.81301
+    },
+    "ARRACHE-CŒUR (THÉÂTRE DE L')": {
+      "lat": 43.944777,
+      "lng": 4.81554
+    },
+    "VILLENEUVE EN SCÈNE (FESTIVAL)": {
+      "lat": 43.962755,
+      "lng": 4.795453
+    },
+    "AU BOUT LÀ-BAS (THÉÂTRE)": {
+      "lat": 43.945986509366335,
+      "lng": 4.810745716094972
+    },
+    "HUMANUM": {
+      "lat": 43.951606,
+      "lng": 4.816865
+    },
+    "INCONGRU (L')": {
+      "lat": 43.94696753821609,
+      "lng": 4.810339808027494
+    },
+    "TRAIN BLEU (THÉÂTRE DU)": {
+      "lat": 43.94829,
+      "lng": 4.812175
+    },
+    "CARRETERIE (THÉÂTRE LA)": {
+      "lat": 43.9513,
+      "lng": 4.815672
+    },
+    "ORIFLAMME (L')": {
+      "lat": 43.949414890375586,
+      "lng": 4.8116469383239755
+    },
+    "LUNA (LA) / LUNA THÉÂTRES": {
+      "lat": 43.945899,
+      "lng": 4.815601
+    },
+    "PIXEL AVIGNON": {
+      "lat": 43.949611,
+      "lng": 4.814275
+    },
+    "ESPACE SAINT MARTIAL": {
+      "lat": 43.945118,
+      "lng": 4.805634
+    },
+    "CABESTAN (THÉÂTRE LE)": {
+      "lat": 43.946847,
+      "lng": 4.808702
+    },
+    "TDV - THÉÂTRE DES VENTS": {
+      "lat": 43.945882225807544,
+      "lng": 4.814207553754387
+    },
+    "CENTRE (THÉÂTRE DU)": {
+      "lat": 43.949441925264566,
+      "lng": 4.813951849719161
+    },
+    "TRANSVERSAL (THÉÂTRE)": {
+      "lat": 43.947329,
+      "lng": 4.811111
+    },
+    "LUCIOLES (THÉÂTRE DES)": {
+      "lat": 43.95337,
+      "lng": 4.812516
+    },
+    "BRUNES (THÉÂTRE DES)": {
+      "lat": 43.947344,
+      "lng": 4.812949
+    },
+    "ACTUEL (THÉÂTRE)": {
+      "lat": 43.9443,
+      "lng": 4.814531
+    },
+    "PARIS (LE)": {
+      "lat": 43.945108461796394,
+      "lng": 4.806759953826259
+    },
+    "MAISON DE LA PAROLE": {
+      "lat": 43.946546,
+      "lng": 4.806171
+    },
+    "AMANTS (THÉÂTRE DES)": {
+      "lat": 43.952135,
+      "lng": 4.810812
+    },
+    "COUR DU SPECTATEUR (LA)": {
+      "lat": 43.95189947408174,
+      "lng": 4.814173579216004
+    },
+    "GÉMEAUX (THÉÂTRE DES)": {
+      "lat": 43.948251,
+      "lng": 4.807963
+    },
+    "COMÉDIE D’AVIGNON (LA)": {
+      "lat": 43.945015,
+      "lng": 4.809227
+    },
+    "3 RAISINS": {
+      "lat": 43.947606,
+      "lng": 4.812094
+    },
+    "PARADISE RÉPUBLIQUE": {
+      "lat": 43.947209,
+      "lng": 4.805465
+    },
+    "AMBIGU THÉÂTRE": {
+      "lat": 43.943909,
+      "lng": 4.807029
+    },
+    "AU VIEUX BALANCIER": {
+      "lat": 43.947937,
+      "lng": 4.811393
+    },
+    "CASTELET (THÉÂTRE LE)": {
+      "lat": 43.951308,
+      "lng": 4.81579
+    },
+    "COMÉDIE SAINT ROCH": {
+      "lat": 43.942752,
+      "lng": 4.802305
+    },
+    "SCIERIE (LA)": {
+      "lat": 43.952022,
+      "lng": 4.81873
+    },
+    "OBSERVANCE (THÉÂTRE DE L')": {
+      "lat": 43.943604,
+      "lng": 4.800089
+    },
+    "CONDITION DES SOIES": {
+      "lat": 43.949623,
+      "lng": 4.810607
+    },
+    "PETITE CASERNE (LA)": {
+      "lat": 43.951401,
+      "lng": 4.816104
+    },
+    "LE TOTEM - ART, ENFANCE, JEUNESSE": {
+      "lat": 43.938992,
+      "lng": 4.805664
+    },
+    "ÉPISCÈNE (THÉÂTRE)": {
+      "lat": 43.9439,
+      "lng": 4.813906
+    },
+    "SALLE BAYAF": {
+      "lat": 43.949882,
+      "lng": 4.812855
+    },
+    "ENTREPÔT (L') - Cie Mises en Scène": {
+      "lat": 43.940942,
+      "lng": 4.805645
+    },
+    "NOTRE-DAME (THÉÂTRE DE)": {
+      "lat": 43.945936,
+      "lng": 4.804699
+    },
+    "SCALA PROVENCE (LA)": {
+      "lat": 43.94645,
+      "lng": 4.804598
+    },
+    "11 • AVIGNON": {
+      "lat": 43.944396,
+      "lng": 4.804142
+    },
+    "ATYPIK THÉÂTRE": {
+      "lat": 43.9464461273158,
+      "lng": 4.811743497848512
+    },
+    "3T AVIGNON – 10ème Avenue": {
+      "lat": 43.942779,
+      "lng": 4.813993
+    },
+    "DOMS (THÉÂTRE DES)": {
+      "lat": 43.95164,
+      "lng": 4.808726
+    },
+    "3S": {
+      "lat": 43.947678194875095,
+      "lng": 4.815884828567505
+    },
+    "FACTORY (LA) - 1-Théâtre de l'Oulle": {
+      "lat": 43.95008,
+      "lng": 4.802949
+    },
+    "PRÉSENCE PASTEUR": {
+      "lat": 43.94787,
+      "lng": 4.813875
+    },
+    "CARNOT (THÉÂTRE)": {
+      "lat": 43.948996,
+      "lng": 4.809326
+    },
+    "PORTE SAINT MICHEL (THÉÂTRE DE LA)": {
+      "lat": 43.943813,
+      "lng": 4.808205
+    },
+    "FACTORY (LA) - 5-Collège Vernet//Hors-Piste": {
+      "lat": 43.948475,
+      "lng": 4.803302
+    },
+    "CHAPELLE DU VERBE INCARNÉ": {
+      "lat": 43.945143,
+      "lng": 4.809516
+    },
+    "BARRIQUES (THÉÂTRE DES)": {
+      "lat": 43.950182,
+      "lng": 4.812512
+    },
+    "ÉTOILES (LES)": {
+      "lat": 43.9463,
+      "lng": 4.814168
+    },
+    "ARTÉPHILE": {
+      "lat": 43.946431,
+      "lng": 4.812414
+    },
+    "IMPRO CLUB D'AVIGNON": {
+      "lat": 43.945419,
+      "lng": 4.8139
+    },
+    "PIERRE DE LUNE / LUNA THÉÂTRES": {
+      "lat": 43.946161,
+      "lng": 4.814514
+    },
+    "COLLÈGE DE LA SALLE (THÉÂTRE DU)": {
+      "lat": 43.94922693322775,
+      "lng": 4.814747571945191
+    },
+    "CINÉVOX THÉÂTRE (LE)": {
+      "lat": 43.949434,
+      "lng": 4.806282
+    },
+    "BALCON (THÉÂTRE DU)": {
+      "lat": 43.947304,
+      "lng": 4.814264
+    },
+    "ISLE 80": {
+      "lat": 43.951191,
+      "lng": 4.811944
+    },
+    "BÉLIERS (THÉÂTRE DES)": {
+      "lat": 43.943819,
+      "lng": 4.811828
+    },
+    "ANCIEN CARMEL D'AVIGNON - MOIS MOLIÈRE": {
+      "lat": 43.94415572697026,
+      "lng": 4.80080544948578
+    },
+    "ARCHIPEL THÉÂTRE": {
+      "lat": 43.947814,
+      "lng": 4.800741
+    },
+    "NOUVELLE ÉTINCELLE (LA)": {
+      "lat": 43.9456,
+      "lng": 4.808539
+    },
+    "REMPART (THÉÂTRE DU)": {
+      "lat": 43.952124,
+      "lng": 4.816988
+    },
+    "INTERFÉRENCES (FESTIVAL)": {
+      "lat": 43.944956,
+      "lng": 4.804371
+    },
+    "BARRETTA (THÉÂTRE)": {
+      "lat": 43.946648,
+      "lng": 4.807328
+    },
+    "ADRESSE (L')": {
+      "lat": 43.943127,
+      "lng": 4.813406
+    },
+    "LAURETTE THÉÂTRE AVIGNON": {
+      "lat": 43.949544,
+      "lng": 4.803733
+    },
+    "Boulodrome de l’Ile Piot": {
+      "lat": 43.951803,
+      "lng": 4.798377
+    },
+    "GRAND PAVOIS (THÉÂTRE LE)": {
+      "lat": 43.947057,
+      "lng": 4.80461
+    },
+    "CORPS SAINTS (THÉÂTRE DES)": {
+      "lat": 43.943859,
+      "lng": 4.807368
+    },
+    "ROI RENÉ (THÉÂTRE DU)": {
+      "lat": 43.947292,
+      "lng": 4.809629
+    },
+    "PETIT CHIEN (THÉÂTRE LE)": {
+      "lat": 43.944436,
+      "lng": 4.814394
+    },
+    "FACTORY (LA) - 4-Les Antonins": {
+      "lat": 43.947219,
+      "lng": 4.806806
+    },
+    "TACHE D'ENCRE (THÉÂTRE DE LA)": {
+      "lat": 43.944837,
+      "lng": 4.813638
+    },
+    "MOKIRI AVIGNON (LE)": {
+      "lat": 43.944322,
+      "lng": 4.810932
+    },
+    "CHAPELLE DE L'ORATOIRE": {
+      "lat": 43.948671,
+      "lng": 4.80338
+    },
+    "MAISON RACINE (THÉÂTRE LA)": {
+      "lat": 43.949937,
+      "lng": 4.804812
+    },
+    "MARELLE DES TEINTURIERS": {
+      "lat": 43.945923,
+      "lng": 4.812154
+    },
+    "GARAGE INTERNATIONAL (THE)": {
+      "lat": 43.95196,
+      "lng": 4.805553
+    },
+    "OPTIMIST (THÉÂTRE DE L')": {
+      "lat": 43.946615,
+      "lng": 4.81407
+    },
+    "FABRIK THÉÂTRE": {
+      "lat": 43.94986804514263,
+      "lng": 4.821256399045525
+    },
+    "AUTRE CARNOT (THÉÂTRE L')": {
+      "lat": 43.949014,
+      "lng": 4.808999
+    },
+    "CARMES ANDRÉ BENEDETTO (THÉÂTRE DES)": {
+      "lat": 43.95038942614377,
+      "lng": 4.81315255176014
+    },
+    "CHÊNE NOIR (THÉÂTRE DU)": {
+      "lat": 43.950518,
+      "lng": 4.809656
+    },
+    "95. AU VERBE FOU, THÉÂTRE LITTÉRAIRE": {
+      "lat": 43.951353,
+      "lng": 4.815125
+    },
+    "ATELIER FLORENTIN": {
+      "lat": 43.948069,
+      "lng": 4.814325
+    },
+    "CHAPEAU ROUGE THÉÂTRE": {
+      "lat": 43.949014,
+      "lng": 4.811549
+    },
+    "HIVERNALES (LES) - CDCN d'Avignon": {
+      "lat": 43.949611,
+      "lng": 4.814275
+    },
+    "Confluence Spectacles": {
+      "lat": 43.9243,
+      "lng": 4.787697
+    },
+    "ATELIER 44 (L')": {
+      "lat": 43.947095,
+      "lng": 4.81419
+    },
+    "ESSAÏON-AVIGNON (THÉÂTRE)": {
+      "lat": 43.950256,
+      "lng": 4.813455
+    },
+    "AVIGNON-REINE BLANCHE": {
+      "lat": 43.951327,
+      "lng": 4.804593
+    },
+    "PETIT LOUVRE (LE) (Van Gogh) – Mois Molière": {
+      "lat": 43.948776,
+      "lng": 4.804438
+    },
+    "LILA'S (THÉÂTRE DES)": {
+      "lat": 43.945497,
+      "lng": 4.813446
+    },
+    "SALLE CAMILLE CLAUDEL": {
+      "lat": 43.943043325319,
+      "lng": 4.8126286268234
+    },
+    "BOURSE DU TRAVAIL CGT (THÉÂTRE DE LA)": {
+      "lat": 43.950054,
+      "lng": 4.812269
+    },
+    "Avignon Université": {
+      "lat": 43.94960670916246,
+      "lng": 4.817086458206177
+    },
+    "FIGUIER POURPRE (LE) (Maison de la Poésie d'Avignon)": {
+      "lat": 43.947223,
+      "lng": 4.806632
+    },
+    "ÉVEILLEUR (L')": {
+      "lat": 43.939081,
+      "lng": 4.810662
+    },
+    "BUFFON (LE) / LUNA THÉÂTRES": {
+      "lat": 43.946363,
+      "lng": 4.815407
+    },
+    "COMÉDIE DU FORUM (LA)": {
+      "lat": 43.949334,
+      "lng": 4.806245
+    },
+    "ROUGE GORGE": {
+      "lat": 43.950018,
+      "lng": 4.807606
+    },
+    "PETIT LOUVRE (LE) (Chapelle des Templiers) – Mois Molière": {
+      "lat": 43.948565,
+      "lng": 4.804023
+    },
+    "GOLOVINE (THÉÂTRE)": {
+      "lat": 43.950425,
+      "lng": 4.809351
+    },
+    "AU COIN DE LA LUNE / LUNA THÉÂTRES": {
+      "lat": 43.945934,
+      "lng": 4.815244
+    },
+    "3T AVIGNON – Les platanes": {
+      "lat": 43.94948955817356,
+      "lng": 4.8133957386016855
+    },
+    "ATELIER (L') (La Manutention)": {
+      "lat": 43.951249,
+      "lng": 4.808538
+    },
+    "VIEUX SAGE (THÉÂTRE LE)": {
+      "lat": 43.950307,
+      "lng": 4.813782
+    },
+    "CHIEN QUI FUME (THÉÂTRE DU)": {
+      "lat": 43.945057,
+      "lng": 4.81438
+    },
+    "GIRASOLE (THÉÂTRE DU)": {
+      "lat": 43.948314,
+      "lng": 4.814126
+    },
+    "CONFIDENTIEL (THÉÂTRE)": {
+      "lat": 43.985586,
+      "lng": 4.888879
+    },
+    "FACTORY (LA) - 3-Salle Tomasi": {
+      "lat": 43.951517,
+      "lng": 4.810113
+    },
+    "AJMi - LA MANUTENTION": {
+      "lat": 43.951135,
+      "lng": 4.808634
+    },
+    "CIRCUS I LOVE YOU": {
+      "lat": 43.956977,
+      "lng": 4.811045
+    }
+  }
+}

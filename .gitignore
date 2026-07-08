@@ -2,8 +2,8 @@ node_modules
 dist
 *.local
 .DS_Store
-# Generated artifacts (regenerate with `npm run scrape` / `npm run scrape:favorites`).
-# Commit them only when you want the deployed site to ship with data baked in.
+# Regenerated on every CI run (npm run scrape / scrape:favorites) — not versioned.
 public/catalog.json
 public/favorites.json
-public/venues.json
+# venues.json (coords des théâtres) est quasi statique et versionné : le CI ne le
+# régénère pas (npm run scrape:venues à lancer à la main entre éditions).

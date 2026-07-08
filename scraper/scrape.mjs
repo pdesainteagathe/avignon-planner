@@ -24,7 +24,9 @@ import {
 const log = (m) => process.stderr.write(m + '\n')
 
 async function modeCatalog(opts) {
-  const shows = await crawlListing(opts.pages ?? 45, opts.limit, log)
+  // Default high enough to reach saturation (crawlListing stops on its own once
+  // several consecutive pages bring nothing new).
+  const shows = await crawlListing(opts.pages ?? 250, opts.limit, log)
   log(`[catalog] ${shows.length} spectacles → récupération des représentations…`)
   await attachPerformances(shows, opts.concurrency ?? 5, log)
   const catalog = await writeCatalog(shows)

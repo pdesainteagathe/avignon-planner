@@ -1,0 +1,41 @@
+name: Rafraîchir les données & déployer
+
+# Scrape le catalogue complet (dispos/quotas frais) et republie le site sur
+# gh-pages — sans intervention. Déclenché automatiquement (cron) ou à la main
+# via le bouton "Run workflow".
+on:
+  schedule:
+    - cron: '0 6,18 * * *' # 06:00 & 18:00 UTC (08:00 & 20:00 Paris)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Scrape du catalogue complet
+        run: npm run scrape
+      - name: Merge des favoris (garantit leur présence + favorites.json)
+        run: npm run scrape:favorites
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE: /avignon-planner/
+      - name: Déploiement sur gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true # une seule commit, pas d'historique qui gonfle
