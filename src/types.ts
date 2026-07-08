@@ -10,6 +10,8 @@ export interface Performance {
    * `undefined`/`true` means bookable (or unknown → treated as bookable).
    */
   available?: boolean
+  /** Remaining seats, when scraped from Ticket'Off. */
+  seatsLeft?: number
 }
 
 /** A show ("spectacle") with a fixed venue, duration and a list of performances. */

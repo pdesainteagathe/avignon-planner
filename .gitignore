@@ -2,5 +2,6 @@ node_modules
 dist
 *.local
 .DS_Store
-# Scraped catalog is a generated artifact; uncomment to keep it out of git:
-# public/catalog.json
+# Scraped catalog is a generated artifact (regenerate with `npm run scrape`).
+# Commit it only when you want the deployed site to ship with data baked in.
+public/catalog.json

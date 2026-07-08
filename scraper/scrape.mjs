@@ -1,263 +1,283 @@
 #!/usr/bin/env node
-// Scraper for the Festival Off d'Avignon programme.
+// Scraper for the Festival Off d'Avignon programme — pure HTTP (no browser).
 //
-// Two decoupled modes (see scraper/README.md for the rationale):
+// The site is server-rendered: the programme paginates via ?page=N (48 cards
+// per page) and each show's "representations" page exposes every dated
+// performance with its availability and remaining seats as plain data-*
+// attributes. No login is needed for this public level.
 //
-//   node scraper/scrape.mjs catalog
-//       Full crawl of the programme (paginated "Charger plus"). Rare (≈1×/day):
-//       titles, venues, durations and performance datetimes barely change.
-//       Writes public/catalog.json.
+// Modes:
+//   node scraper/scrape.mjs catalog [--limit N] [--pages N] [--concurrency C]
+//       Full crawl → public/catalog.json. Rare (≈1×/day). --limit caps the
+//       number of shows (handy for testing without hitting all ~1900).
 //
-//   node scraper/scrape.mjs availability --ids s1,s2,s3
-//       Targeted refresh of availability for the user's favourites only.
-//       Frequent (every 1–2h), lightweight. Merges "available" flags into the
-//       existing public/catalog.json without touching the rest.
+//   node scraper/scrape.mjs availability --ids off-8060,off-9155
+//       Refresh only these shows' performances/availability in place. Frequent.
 //
-//   node scraper/scrape.mjs dump --url <showUrl>
-//       Print the raw HTML of one show page — use this to (re)discover the CSS
-//       selectors below against the live DOM.
+//   node scraper/scrape.mjs one --url <detailOrReprUrl>
+//       Parse and print one show (debug).
 //
-// Requires Playwright:  npm i -D playwright  &&  npx playwright install chromium
-//
-// NOTE: the SELECTORS block is the only site-specific part. It is written from
-// the observed page structure but MUST be verified against the live DOM (use
-// the `dump` mode) — the festival site changes between editions.
+// Politeness: small delay + limited concurrency. Please keep it that way.
 
 import { writeFile, readFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import * as cheerio from 'cheerio'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const CATALOG_PATH = resolve(__dirname, '../public/catalog.json')
 const BASE = 'https://www.festivaloffavignon.com'
-const PROGRAMME_URL = `${BASE}/programme`
+const UA =
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
+const DELAY_MS = 150
 
-// --- Site-specific selectors (VERIFY with `dump` mode) ------------------------
-const SELECTORS = {
-  loadMore: 'button:has-text("Charger plus")',
-  card: '[data-spectacle], article.spectacle, .programme-item',
-  title: 'h2, .titre, .spectacle-titre',
-  venue: '.lieu, .venue, [data-lieu]',
-  duration: '.duree, [data-duree]',
-  time: '.horaire, .heure, [data-horaire]',
-  link: 'a[href*="/spectacles/"]',
-  // On a show page: each dated performance and its bookable/sold-out state.
-  perfRow: '.representation, [data-representation]',
-  perfDate: '.date, [data-date]',
-  soldOut: '.complet, .sold-out, [data-complet="true"]',
-}
-// -----------------------------------------------------------------------------
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-function parseArgs(argv) {
-  const [mode, ...rest] = argv
-  const args = { mode }
-  for (let i = 0; i < rest.length; i++) {
-    if (rest[i] === '--ids') args.ids = (rest[++i] ?? '').split(',').filter(Boolean)
-    else if (rest[i] === '--url') args.url = rest[++i]
-    else if (rest[i] === '--headful') args.headful = true
-  }
-  return args
-}
-
-async function launch(headful) {
-  let chromium
-  try {
-    ;({ chromium } = await import('playwright'))
-  } catch {
-    console.error(
-      'Playwright manquant. Installe-le :\n' +
-        '  npm i -D playwright && npx playwright install chromium',
-    )
-    process.exit(1)
-  }
-  const browser = await chromium.launch({ headless: !headful })
-  const context = await browser.newContext({ locale: 'fr-FR' })
-  return { browser, context }
-}
-
-/** Full catalogue crawl. */
-async function scrapeCatalog(headful) {
-  const { browser, context } = await launch(headful)
-  const page = await context.newPage()
-  await page.goto(PROGRAMME_URL, { waitUntil: 'networkidle' })
-
-  // Exhaust the "Charger plus" pagination.
-  for (let guard = 0; guard < 200; guard++) {
-    const btn = page.locator(SELECTORS.loadMore)
-    if ((await btn.count()) === 0 || !(await btn.first().isVisible())) break
-    await btn.first().click()
-    await page.waitForTimeout(600)
-  }
-
-  const cards = await page.locator(SELECTORS.card).all()
-  console.error(`[catalog] ${cards.length} fiches détectées`)
-
-  const shows = []
-  for (const card of cards) {
-    const show = await extractCard(card)
-    if (show) shows.push(show)
-  }
-
-  // Second pass: visit each show page for full performance list + availability.
-  for (const show of shows) {
-    if (!show._url) continue
+async function fetchText(url, tries = 3) {
+  for (let i = 0; i < tries; i++) {
     try {
-      const p = await context.newPage()
-      await p.goto(show._url, { waitUntil: 'domcontentloaded' })
-      show.performances = await extractPerformances(p)
-      await p.close()
+      const res = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'fr-FR' } })
+      if (res.ok) return await res.text()
+      if (res.status === 404) return null
+      throw new Error(`HTTP ${res.status}`)
     } catch (e) {
-      console.error(`[catalog] échec fiche ${show.title}: ${e.message}`)
+      if (i === tries - 1) throw e
+      await sleep(500 * (i + 1))
     }
-    delete show._url
-  }
-
-  await writeCatalog(shows)
-  await browser.close()
-}
-
-async function extractCard(card) {
-  const text = async (sel) =>
-    (await card.locator(sel).first().textContent().catch(() => ''))?.trim() ?? ''
-  const title = await text(SELECTORS.title)
-  if (!title) return null
-  const href = await card
-    .locator(SELECTORS.link)
-    .first()
-    .getAttribute('href')
-    .catch(() => null)
-  const durationTxt = await text(SELECTORS.duration)
-  const duration = parseInt(durationTxt.replace(/\D+/g, ''), 10)
-  return {
-    id: slug(title, href),
-    title,
-    venue: await text(SELECTORS.venue),
-    durationMin: Number.isFinite(duration) ? duration : 75,
-    performances: [],
-    ticketUrl: href ? new URL(href, BASE).toString() : undefined,
-    _url: href ? new URL(href, BASE).toString() : undefined,
   }
 }
 
-async function extractPerformances(page) {
-  const rows = await page.locator(SELECTORS.perfRow).all()
+// --- parsing -----------------------------------------------------------------
+
+function idFromUrl(url) {
+  const m = url?.match(/\/spectacles\/(?:representations\/)?(\d+)/)
+  return m ? `off-${m[1]}` : null
+}
+
+/** "21h40" → "21:40"; "9h" → "09:00". */
+function parseTime(txt) {
+  const m = (txt || '').match(/(\d{1,2})\s*h\s*(\d{2})?/i)
+  if (!m) return null
+  return `${m[1].padStart(2, '0')}:${m[2] ?? '00'}`
+}
+
+/** "1h", "1h30", "50 min" → minutes. */
+function parseDuration(txt) {
+  const t = (txt || '').toLowerCase()
+  let m = t.match(/(\d+)\s*h\s*(\d{1,2})?/)
+  if (m) return parseInt(m[1], 10) * 60 + (m[2] ? parseInt(m[2], 10) : 0)
+  m = t.match(/(\d+)\s*min/)
+  if (m) return parseInt(m[1], 10)
+  return 75
+}
+
+const clean = (s) => (s || '').replace(/\s+/g, ' ').trim()
+
+/** Parse one programme listing page → array of show metadata (no performances). */
+function parseListing(html) {
+  const $ = cheerio.load(html)
+  const shows = []
+  $('.global-card.spectacle-card').each((_, el) => {
+    const card = $(el)
+    const nom = card.find('a.card-nom')
+    const detailUrl = nom.attr('href')
+    const id = idFromUrl(detailUrl || '')
+    const title = clean(nom.text())
+    if (!id || !title) return
+    const reprHref = card.find('a[href*="/spectacles/representations/"]').attr('href')
+    const reprUrl = reprHref
+      ? new URL(reprHref, BASE).toString()
+      : `${BASE}/spectacles/representations/${id.replace('off-', '')}`
+    // First plain .tag is the genre; the Ticket'Off link is .tag.tag-orange.
+    const genre = clean(card.find('.liste-tags .tag').not('.tag-orange').first().text())
+    shows.push({
+      id,
+      title,
+      company: undefined,
+      genre: genre || undefined,
+      venue: clean(card.find('.theatre').text()),
+      durationMin: parseDuration(card.find('.duree').text()),
+      defaultTime: parseTime(card.find('.heure').text()),
+      reprUrl,
+      ticketUrl: reprUrl,
+      performances: [],
+    })
+  })
+  return shows
+}
+
+/** Parse a representations page → performances with availability & seats. */
+function parsePerformances(html, defaultTime) {
+  const $ = cheerio.load(html)
   const perfs = []
-  let i = 0
-  for (const row of rows) {
-    const dateTxt = (await row.locator(SELECTORS.perfDate).first().textContent().catch(() => '')) ?? ''
-    const iso = parseFrenchDate(dateTxt.trim())
-    if (!iso) continue
-    const soldOut = (await row.locator(SELECTORS.soldOut).count().catch(() => 0)) > 0
-    perfs.push({ id: `p${i++}`, start: iso, available: !soldOut })
-  }
+  $('.js-card-date').each((_, el) => {
+    const c = $(el)
+    const date = c.attr('data-date')
+    if (!date) return
+    const time = parseTime(c.attr('data-heure')) || defaultTime || '00:00'
+    const canReserve = c.attr('data-can-reserve') === '1'
+    const status = c.attr('data-status')
+    const seats = parseInt(c.attr('data-nb-place') || '', 10)
+    perfs.push({
+      id: c.attr('id') || `${date}`,
+      start: `${date}T${time}`,
+      // Bookable = the site says you can reserve. Past dates report
+      // "unavailable" and are naturally excluded by presence windows anyway.
+      available: canReserve && status === 'available',
+      seatsLeft: Number.isFinite(seats) ? seats : undefined,
+    })
+  })
   return perfs
 }
 
-/** Targeted availability refresh for a subset of shows. */
-async function scrapeAvailability(ids, headful) {
-  const catalog = JSON.parse(await readFile(CATALOG_PATH, 'utf8'))
-  const wanted = new Set(ids)
-  const targets = catalog.shows.filter((s) => wanted.has(s.id) && s.ticketUrl)
-  console.error(`[availability] ${targets.length} favoris à rafraîchir`)
+// --- concurrency pool --------------------------------------------------------
 
-  const { browser, context } = await launch(headful)
-  for (const show of targets) {
-    try {
-      const p = await context.newPage()
-      await p.goto(show.ticketUrl, { waitUntil: 'domcontentloaded' })
-      const fresh = await extractPerformances(p)
-      // Merge availability by matching start datetime.
-      const byStart = new Map(fresh.map((f) => [f.start, f.available]))
-      for (const perf of show.performances) {
-        if (byStart.has(perf.start)) perf.available = byStart.get(perf.start)
-      }
-      await p.close()
-    } catch (e) {
-      console.error(`[availability] échec ${show.title}: ${e.message}`)
+async function pool(items, concurrency, worker) {
+  const results = new Array(items.length)
+  let next = 0
+  async function run() {
+    while (next < items.length) {
+      const i = next++
+      results[i] = await worker(items[i], i)
+      await sleep(DELAY_MS)
     }
   }
-  catalog.generatedAt = isoStamp()
-  await browser.close()
-  await writeCatalogRaw(catalog)
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run))
+  return results
 }
 
-async function dump(url) {
-  const { browser, context } = await launch(true)
-  const page = await context.newPage()
-  await page.goto(url, { waitUntil: 'networkidle' })
-  console.log(await page.content())
-  await browser.close()
-}
+// --- modes -------------------------------------------------------------------
 
-// --- helpers -----------------------------------------------------------------
-
-function slug(title, href) {
-  const m = href?.match(/(\d+)/)
-  if (m) return `off-${m[1]}`
-  return 'off-' + title.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').slice(0, 40)
-}
-
-const MONTHS = {
-  janvier: '01', février: '02', mars: '03', avril: '04', mai: '05', juin: '06',
-  juillet: '07', août: '08', septembre: '09', octobre: '10', novembre: '11', décembre: '12',
-}
-
-/** "10 juillet 2026 à 14h30" / "10/07 14:30" → "2026-07-10T14:30". */
-function parseFrenchDate(txt) {
-  if (!txt) return null
-  let m = txt.match(/(\d{1,2})\s+([a-zûé]+)\s+(\d{4}).*?(\d{1,2})[h:](\d{2})/i)
-  if (m && MONTHS[m[2].toLowerCase()]) {
-    return `${m[3]}-${MONTHS[m[2].toLowerCase()]}-${m[1].padStart(2, '0')}T${m[4].padStart(2, '0')}:${m[5]}`
+async function crawlListing(maxPages, limit) {
+  const byId = new Map()
+  for (let page = 1; page <= maxPages; page++) {
+    const html = await fetchText(`${BASE}/programme?page=${page}`)
+    if (!html) break
+    const shows = parseListing(html)
+    if (shows.length === 0) break
+    let added = 0
+    for (const s of shows) {
+      if (!byId.has(s.id)) {
+        byId.set(s.id, s)
+        added++
+      }
+    }
+    process.stderr.write(
+      `[listing] page ${page}: +${added} (total ${byId.size})\n`,
+    )
+    if (limit && byId.size >= limit) break
+    // Stop when a full page brings nothing new (end of randomised rotation).
+    if (added === 0) break
+    await sleep(DELAY_MS)
   }
-  m = txt.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?.*?(\d{1,2})[h:](\d{2})/)
-  if (m) {
-    const year = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : '2026'
-    return `${year}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}T${m[4].padStart(2, '0')}:${m[5]}`
-  }
-  return null
+  let all = [...byId.values()]
+  if (limit) all = all.slice(0, limit)
+  return all
 }
 
-function isoStamp() {
-  // Avoid Date.now-style non-determinism concerns: fine here (real CLI run).
-  return new Date().toISOString().slice(0, 16)
-}
-
-async function writeCatalog(shows) {
-  await writeCatalogRaw({
-    source: 'festivaloffavignon.com',
-    generatedAt: isoStamp(),
-    shows,
+async function attachPerformances(shows, concurrency) {
+  let done = 0
+  await pool(shows, concurrency, async (show) => {
+    try {
+      const html = await fetchText(show.reprUrl)
+      if (html) show.performances = parsePerformances(html, show.defaultTime)
+    } catch (e) {
+      process.stderr.write(`[perf] échec ${show.title}: ${e.message}\n`)
+    }
+    if (++done % 25 === 0 || done === shows.length) {
+      process.stderr.write(`[perf] ${done}/${shows.length}\n`)
+    }
   })
 }
 
-async function writeCatalogRaw(catalog) {
-  await mkdir(dirname(CATALOG_PATH), { recursive: true })
-  await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8')
-  console.error(`✓ écrit ${CATALOG_PATH} (${catalog.shows.length} spectacles)`)
+function tidy(shows) {
+  return shows.map(({ reprUrl, defaultTime, ...s }) => s)
 }
 
-// --- main --------------------------------------------------------------------
+async function writeCatalog(shows) {
+  await mkdir(dirname(CATALOG_PATH), { recursive: true })
+  const catalog = {
+    source: 'festivaloffavignon.com',
+    generatedAt: new Date().toISOString().slice(0, 16),
+    shows: tidy(shows),
+  }
+  await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8')
+  const perfs = shows.reduce((n, s) => n + s.performances.length, 0)
+  process.stderr.write(`✓ ${CATALOG_PATH}\n  ${shows.length} spectacles, ${perfs} représentations\n`)
+}
 
-const args = parseArgs(process.argv.slice(2))
-switch (args.mode) {
+async function modeCatalog(opts) {
+  const shows = await crawlListing(opts.pages ?? 45, opts.limit)
+  process.stderr.write(`[catalog] ${shows.length} spectacles → récupération des représentations…\n`)
+  await attachPerformances(shows, opts.concurrency ?? 5)
+  await writeCatalog(shows)
+}
+
+async function modeAvailability(ids, concurrency) {
+  const catalog = JSON.parse(await readFile(CATALOG_PATH, 'utf8'))
+  const wanted = new Set(ids)
+  const targets = catalog.shows.filter((s) => wanted.has(s.id))
+  process.stderr.write(`[availability] ${targets.length} favoris\n`)
+  await pool(targets, concurrency ?? 5, async (show) => {
+    const reprUrl = show.ticketUrl || `${BASE}/spectacles/representations/${show.id.replace('off-', '')}`
+    try {
+      const html = await fetchText(reprUrl)
+      if (html) show.performances = parsePerformances(html, null)
+    } catch (e) {
+      process.stderr.write(`[availability] échec ${show.title}: ${e.message}\n`)
+    }
+  })
+  catalog.generatedAt = new Date().toISOString().slice(0, 16)
+  await mkdir(dirname(CATALOG_PATH), { recursive: true })
+  await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8')
+  process.stderr.write(`✓ dispos rafraîchies pour ${targets.length} spectacles\n`)
+}
+
+async function modeOne(url) {
+  const id = idFromUrl(url)
+  const reprUrl = url.includes('/representations/')
+    ? url
+    : `${BASE}/spectacles/representations/${id.replace('off-', '')}`
+  const html = await fetchText(reprUrl)
+  console.log(JSON.stringify(parsePerformances(html, null), null, 2))
+}
+
+// --- CLI ---------------------------------------------------------------------
+
+function parseArgs(argv) {
+  const [mode, ...rest] = argv
+  const o = { mode }
+  for (let i = 0; i < rest.length; i++) {
+    const a = rest[i]
+    if (a === '--ids') o.ids = (rest[++i] || '').split(',').filter(Boolean)
+    else if (a === '--url') o.url = rest[++i]
+    else if (a === '--limit') o.limit = parseInt(rest[++i], 10)
+    else if (a === '--pages') o.pages = parseInt(rest[++i], 10)
+    else if (a === '--concurrency') o.concurrency = parseInt(rest[++i], 10)
+  }
+  return o
+}
+
+const o = parseArgs(process.argv.slice(2))
+switch (o.mode) {
   case 'catalog':
-    await scrapeCatalog(args.headful)
+    await modeCatalog(o)
     break
   case 'availability':
-    if (!args.ids?.length) {
-      console.error('Usage: scrape.mjs availability --ids s1,s2,s3')
+    if (!o.ids?.length) {
+      console.error('Usage: scrape.mjs availability --ids off-8060,off-9155')
       process.exit(1)
     }
-    await scrapeAvailability(args.ids, args.headful)
+    await modeAvailability(o.ids, o.concurrency)
     break
-  case 'dump':
-    if (!args.url) {
-      console.error('Usage: scrape.mjs dump --url <showUrl>')
+  case 'one':
+    if (!o.url) {
+      console.error('Usage: scrape.mjs one --url <url>')
       process.exit(1)
     }
-    await dump(args.url)
+    await modeOne(o.url)
     break
   default:
-    console.error('Modes: catalog | availability --ids .. | dump --url ..')
+    console.error('Modes: catalog [--limit N] | availability --ids .. | one --url ..')
     process.exit(1)
 }
