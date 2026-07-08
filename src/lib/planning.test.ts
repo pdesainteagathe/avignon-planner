@@ -132,6 +132,32 @@ describe('plan (integration on sample catalog)', () => {
     expect(online.unscheduled[0].reason).toBe('quota')
   })
 
+  it('uses theatre availability to rescue or confirm "quota" séances', () => {
+    const mk = (theatreStatus?: 'onSale' | 'soldOut') => ({
+      source: 'test',
+      shows: [
+        {
+          id: 't',
+          title: 'Test théâtre',
+          venue: 'V',
+          durationMin: 60,
+          performances: [
+            { id: 't1', start: '2026-07-08T14:00', status: 'quota' as const, available: true, theatreStatus },
+          ],
+        },
+      ],
+    })
+    const win = [{ id: 'w', date: '2026-07-08', start: '10:00', end: '18:00' }]
+    // Quota on Ticket'Off but on sale at the theatre → scheduled, flagged.
+    const rescued = plan(mk('onSale'), [{ showId: 't' }], win, DEFAULT_SETTINGS)
+    expect(rescued.scheduled.length).toBe(1)
+    expect(rescued.scheduled[0].theatreStatus).toBe('onSale')
+    // Quota AND sold out at the theatre → confirmed gone, not scheduled.
+    const gone = plan(mk('soldOut'), [{ showId: 't' }], win, DEFAULT_SETTINGS)
+    expect(gone.scheduled.length).toBe(0)
+    expect(gone.unscheduled[0].reason).toBe('sold-out')
+  })
+
   it('sanity: satisfaction never exceeds the theoretical max', () => {
     expect(result.totalWeight).toBeLessThanOrEqual(result.maxWeight)
     expect(isoToMs('2026-07-08T10:00')).toBeLessThan(isoToMs('2026-07-08T10:01'))

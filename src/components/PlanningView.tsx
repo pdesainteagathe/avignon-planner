@@ -182,7 +182,11 @@ export function PlanningView({ result, updatedAt }: Props) {
                     <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
                     <span className="slot-title">
                       <span className="mini-rank">#{entry.rank + 1}</span> {entry.show.title}
-                      {entry.status === 'quota' ? (
+                      {entry.status === 'quota' && entry.theatreStatus === 'onSale' ? (
+                        <span className="seats theatre" title="Quota Ticket'Off atteint, mais réservable directement sur la billetterie du théâtre">
+                          🎭 dispo au théâtre
+                        </span>
+                      ) : entry.status === 'quota' ? (
                         <span className="seats quota" title="Quota en ligne Ticket'Off atteint — peut rester dispo directement au théâtre">
                           🎫 quota Ticket'Off
                         </span>

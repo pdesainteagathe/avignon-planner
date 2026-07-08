@@ -507,6 +507,11 @@ input.search {
   color: var(--info);
   border: 1px solid rgba(96, 165, 250, 0.4);
 }
+.seats.theatre {
+  background: rgba(52, 211, 153, 0.15);
+  color: var(--good);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+}
 .banner.urgent {
   background: rgba(248, 113, 113, 0.1);
   border: 1px solid rgba(248, 113, 113, 0.4);

@@ -20,6 +20,12 @@ export interface Performance {
   available?: boolean
   /** Remaining online seats (only when `status === 'online'`). */
   seatsLeft?: number
+  /**
+   * Availability on the theatre's OWN ticketing (e.g. Mapado), when known.
+   * Lets a séance that is "quota atteint" on Ticket'Off still be bookable
+   * directly at the theatre. `onSale` = the theatre still sells it.
+   */
+  theatreStatus?: 'onSale' | 'soldOut'
 }
 
 /** A show ("spectacle") with a fixed venue, duration and a list of performances. */

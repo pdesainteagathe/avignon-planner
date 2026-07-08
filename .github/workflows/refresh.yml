@@ -29,6 +29,8 @@ jobs:
         run: npm run scrape:catalog
       - name: Merge des favoris (garantit leur présence + favorites.json)
         run: npm run scrape:favorites
+      - name: Dispos billetteries des théâtres (Mapado)
+        run: npm run scrape:theatres
       - name: Build
         run: npm run build
         env:

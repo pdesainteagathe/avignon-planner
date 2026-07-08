@@ -28,6 +28,7 @@ export interface ScheduledItem {
   weight: number
   seatsLeft?: number
   status?: 'online' | 'quota' | 'closed'
+  theatreStatus?: 'onSale' | 'soldOut'
 }
 
 export interface UnscheduledItem {
@@ -133,12 +134,18 @@ export function plan(
     let anyAvailable = false
     let anyFitting = false
     let anyQuotaExcluded = false
+    let anyConfirmedSoldOut = false
     for (const perf of show.performances) {
       if (perf.available === false) continue // closed / past
       anyAvailable = true
       const start = isoToMs(perf.start)
       const end = addMinutes(start, show.durationMin)
       if (!fitsAnyWindow(start, end, windowsMs)) continue
+      // Quota on Ticket'Off AND sold out on the theatre's own channel → gone.
+      if (perf.status === 'quota' && perf.theatreStatus === 'soldOut') {
+        anyConfirmedSoldOut = true
+        continue
+      }
       if (settings.onlineOnly && perf.status === 'quota') {
         anyQuotaExcluded = true
         continue
@@ -147,7 +154,11 @@ export function plan(
       candidates.push({ showId: show.id, perfId: perf.id, start, end, weight, venueKey: show.venue })
     }
     if (!anyAvailable) blocked.set(show.id, 'sold-out')
-    else if (!anyFitting) blocked.set(show.id, anyQuotaExcluded ? 'quota' : 'outside-windows')
+    else if (!anyFitting)
+      blocked.set(
+        show.id,
+        anyQuotaExcluded ? 'quota' : anyConfirmedSoldOut ? 'sold-out' : 'outside-windows',
+      )
   })
 
   const { candidates: mealCands, labels: mealLabels } = mealCandidates(windows, settings.meals)
@@ -173,6 +184,7 @@ export function plan(
       weight: c.weight,
       seatsLeft: perf?.seatsLeft,
       status: perf?.status,
+      theatreStatus: perf?.theatreStatus,
     }
   })
   scheduled.sort((a, b) => a.start - b.start)

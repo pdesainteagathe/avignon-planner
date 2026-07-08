@@ -22,11 +22,13 @@ export function toPlainText(result: PlanResult): string {
         lines.push(`  ${formatRange(e.start, e.end)}   ${icon} ${e.label} (temps libre)`)
       } else {
         const tag =
-          e.status === 'quota'
-            ? "  🎫 quota Ticket'Off atteint (voir au théâtre)"
-            : e.seatsLeft && e.seatsLeft > 0 && e.seatsLeft <= 15
-              ? `  ⚠️ ${e.seatsLeft} places`
-              : ''
+          e.status === 'quota' && e.theatreStatus === 'onSale'
+            ? '  🎭 dispo directement au théâtre'
+            : e.status === 'quota'
+              ? "  🎫 quota Ticket'Off atteint (voir au théâtre)"
+              : e.seatsLeft && e.seatsLeft > 0 && e.seatsLeft <= 15
+                ? `  ⚠️ ${e.seatsLeft} places`
+                : ''
         lines.push(`  ${formatRange(e.start, e.end)}   ${e.show.title} — ${e.show.venue}${tag}`)
       }
     }
@@ -69,11 +71,13 @@ export function toICS(result: PlanResult): string {
   }
   for (const it of result.scheduled) {
     const note =
-      it.status === 'quota'
-        ? " · quota Ticket'Off atteint (voir au théâtre)"
-        : it.seatsLeft && it.seatsLeft > 0
-          ? ` · ${it.seatsLeft} places restantes`
-          : ''
+      it.status === 'quota' && it.theatreStatus === 'onSale'
+        ? ' · dispo directement au théâtre (quota Ticket’Off atteint)'
+        : it.status === 'quota'
+          ? " · quota Ticket'Off atteint (voir au théâtre)"
+          : it.seatsLeft && it.seatsLeft > 0
+            ? ` · ${it.seatsLeft} places restantes`
+            : ''
     event(`show-${it.perfId}@avignon-planner`, it.start, it.end, it.show.title, it.show.venue, `Choix #${it.rank + 1}${note}`)
   }
   for (const b of result.breaks) {

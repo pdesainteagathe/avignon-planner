@@ -13,6 +13,7 @@
     "scrape": "node scraper/scrape.mjs",
     "scrape:catalog": "node scraper/scrape.mjs catalog",
     "scrape:favorites": "node scraper/addFavorites.mjs",
+    "scrape:theatres": "node scraper/mapado.mjs",
     "scrape:venues": "node scraper/venues.mjs",
     "icons": "node scripts/icons.mjs",
     "deploy": "bash scripts/deploy.sh"
