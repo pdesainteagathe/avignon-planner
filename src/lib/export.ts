@@ -18,7 +18,8 @@ export function toPlainText(result: PlanResult): string {
     lines.push(formatDay(day.entries[0].start))
     for (const e of day.entries) {
       if (e.kind === 'break') {
-        lines.push(`  ${formatRange(e.start, e.end)}   ${e.label} (temps libre)`)
+        const icon = /d[îi]ner/i.test(e.label) ? '🍷' : '🍽️'
+        lines.push(`  ${formatRange(e.start, e.end)}   ${icon} ${e.label} (temps libre)`)
       } else {
         const tag =
           e.status === 'quota'
