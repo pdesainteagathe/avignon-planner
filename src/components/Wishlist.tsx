@@ -4,9 +4,17 @@ interface Props {
   catalog: Catalog
   wishlist: WishItem[]
   onChange: (wishlist: WishItem[]) => void
+  favoritesCount?: number
+  onLoadFavorites?: () => void
 }
 
-export function Wishlist({ catalog, wishlist, onChange }: Props) {
+export function Wishlist({
+  catalog,
+  wishlist,
+  onChange,
+  favoritesCount = 0,
+  onLoadFavorites,
+}: Props) {
   const byId = new Map(catalog.shows.map((s) => [s.id, s]))
 
   const move = (from: number, to: number) => {
@@ -25,7 +33,25 @@ export function Wishlist({ catalog, wishlist, onChange }: Props) {
 
   return (
     <section className="card">
-      <h2>3 · Ordre de préférence</h2>
+      <div className="card-head">
+        <h2>3 · Ordre de préférence</h2>
+        {favoritesCount > 0 && onLoadFavorites && (
+          <button
+            className="add-btn small"
+            title="Remplace la liste par ma sélection pré-établie"
+            onClick={() => {
+              if (
+                wishlist.length === 0 ||
+                confirm(`Remplacer la liste actuelle par ma sélection (${favoritesCount} pièces) ?`)
+              ) {
+                onLoadFavorites()
+              }
+            }}
+          >
+            ★ Charger ma sélection ({favoritesCount})
+          </button>
+        )}
+      </div>
       <p className="hint">
         Du plus au moins important. L’optimiseur maximise ta satisfaction en
         privilégiant le haut de la liste.

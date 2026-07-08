@@ -2,6 +2,7 @@ node_modules
 dist
 *.local
 .DS_Store
-# Scraped catalog is a generated artifact (regenerate with `npm run scrape`).
-# Commit it only when you want the deployed site to ship with data baked in.
+# Generated artifacts (regenerate with `npm run scrape` / `npm run scrape:favorites`).
+# Commit them only when you want the deployed site to ship with data baked in.
 public/catalog.json
+public/favorites.json

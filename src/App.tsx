@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Catalog, PlannerSettings, PresenceWindow, WeightMode, WishItem } from './types'
 import { sampleCatalog } from './data/sampleCatalog'
 import { loadState, saveState } from './lib/storage'
@@ -14,6 +14,8 @@ export default function App() {
   const [windows, setWindows] = useState<PresenceWindow[]>(initial.windows)
   const [wishlist, setWishlist] = useState<WishItem[]>(initial.wishlist)
   const [settings, setSettings] = useState<PlannerSettings>(initial.settings)
+  const [favorites, setFavorites] = useState<string[]>([])
+  const seededRef = useRef(false)
 
   // Load the real scraped catalog if present (public/catalog.json); else keep sample.
   useEffect(() => {
@@ -28,6 +30,31 @@ export default function App() {
         /* keep sample */
       })
   }, [])
+
+  // Load the curated favourites list (public/favorites.json).
+  useEffect(() => {
+    fetch('favorites.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.showIds)) setFavorites(data.showIds)
+      })
+      .catch(() => {})
+  }, [])
+
+  const loadFavorites = () =>
+    setWishlist(favorites.map((showId) => ({ showId })))
+
+  // Auto-seed the wishlist from favourites when the stored one has no show that
+  // still exists in the current catalog (e.g. leftover demo entries). Runs once.
+  useEffect(() => {
+    if (seededRef.current || favorites.length === 0 || catalog.shows.length === 0) return
+    const catalogIds = new Set(catalog.shows.map((s) => s.id))
+    const validCount = wishlist.filter((w) => catalogIds.has(w.showId)).length
+    if (validCount === 0) {
+      seededRef.current = true
+      setWishlist(favorites.map((showId) => ({ showId })))
+    }
+  }, [favorites, catalog, wishlist])
 
   useEffect(() => {
     saveState({ windows, wishlist, settings })
@@ -61,7 +88,13 @@ export default function App() {
         <div className="col-config">
           <PresenceEditor windows={windows} onChange={setWindows} />
           <CatalogBrowser catalog={catalog} wishlist={wishlist} onAdd={addToWishlist} />
-          <Wishlist catalog={catalog} wishlist={wishlist} onChange={setWishlist} />
+          <Wishlist
+            catalog={catalog}
+            wishlist={wishlist}
+            onChange={setWishlist}
+            favoritesCount={favorites.length}
+            onLoadFavorites={loadFavorites}
+          />
           <Settings settings={settings} onChange={setSettings} />
         </div>
         <div className="col-planning">

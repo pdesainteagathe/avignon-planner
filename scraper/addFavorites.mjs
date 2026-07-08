@@ -10,7 +10,7 @@
 //   node scraper/addFavorites.mjs [--dry]
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { dirname } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import {
   BASE,
   CATALOG_PATH,
@@ -241,13 +241,22 @@ await pool(matched, 5, async ({ show }) => {
   }
 })
 
-// Build the shows to add.
+// Build the shows to add, and remember each favourite's resolved show id.
 const toAdd = []
-for (const { show } of matched) {
+const idByFav = new Map()
+for (const { fav, show } of matched) {
   const { reprUrl, defaultTime, ...clean } = show
   toAdd.push(clean)
+  idByFav.set(fav, clean.id)
 }
-for (const { fav } of misses) toAdd.push(fabricate(fav))
+for (const { fav } of misses) {
+  const s = fabricate(fav)
+  toAdd.push(s)
+  idByFav.set(fav, s.id)
+}
+
+// Ordered list of show ids, in the exact order the favourites were provided.
+const orderedIds = FAVES.map((f) => idByFav.get(f)).filter(Boolean)
 
 // Merge into the existing catalog (by id; favourites win on refresh).
 const catalog = JSON.parse(await readFile(CATALOG_PATH, 'utf8'))
@@ -268,10 +277,19 @@ log(
     `(${perfs} représentations). Ajoutées: ${added}, mises à jour: ${updated}.`,
 )
 
+const FAVORITES_PATH = resolve(dirname(CATALOG_PATH), 'favorites.json')
+const favoritesFile = {
+  generatedAt: new Date().toISOString().slice(0, 16),
+  showIds: orderedIds,
+}
+
 if (DRY) {
-  log('[dry-run] catalog.json NON modifié.')
+  log('[dry-run] catalog.json / favorites.json NON modifiés.')
+  log(`[dry-run] ordre favoris (${orderedIds.length}): ${orderedIds.join(', ')}`)
 } else {
   await mkdir(dirname(CATALOG_PATH), { recursive: true })
   await writeFile(CATALOG_PATH, JSON.stringify(catalog, null, 2), 'utf8')
+  await writeFile(FAVORITES_PATH, JSON.stringify(favoritesFile, null, 2), 'utf8')
   log(`✓ ${CATALOG_PATH} — total ${catalog.shows.length} spectacles.`)
+  log(`✓ ${FAVORITES_PATH} — ${orderedIds.length} favoris ordonnés.`)
 }

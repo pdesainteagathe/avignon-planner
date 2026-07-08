@@ -97,6 +97,17 @@ body {
   font-size: 1.05rem;
 }
 
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.card-head h2 {
+  margin: 0;
+}
+
 .card h3 {
   font-size: 0.95rem;
   margin: 12px 0 8px;
