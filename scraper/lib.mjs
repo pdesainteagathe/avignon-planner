@@ -123,6 +123,7 @@ export async function pool(items, concurrency, worker) {
 
 export async function crawlListing(maxPages, limit, log = () => {}) {
   const byId = new Map()
+  let zeroStreak = 0
   for (let page = 1; page <= maxPages; page++) {
     const html = await fetchText(`${BASE}/programme?page=${page}`)
     if (!html) break
@@ -137,7 +138,10 @@ export async function crawlListing(maxPages, limit, log = () => {}) {
     }
     log(`[listing] page ${page}: +${added} (total ${byId.size})`)
     if (limit && byId.size >= limit) break
-    if (added === 0) break
+    // The site rotates ordering, so a single page can add nothing by chance.
+    // Only stop once several consecutive pages bring nothing new (saturated).
+    zeroStreak = added === 0 ? zeroStreak + 1 : 0
+    if (zeroStreak >= 5) break
     await sleep(DELAY_MS)
   }
   let all = [...byId.values()]
