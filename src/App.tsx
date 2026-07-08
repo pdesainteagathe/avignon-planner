@@ -181,7 +181,7 @@ function Settings({
             checked={settings.onlineOnly}
             onChange={(e) => onChange({ ...settings, onlineOnly: e.target.checked })}
           />
-          Uniquement réservable en ligne (exclure les « quota atteint »)
+          Exclure les séances « quota atteint · guichet » (garder seulement le réservable en ligne)
         </label>
       </div>
       <div className="setting-row">
