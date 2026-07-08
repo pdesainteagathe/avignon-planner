@@ -355,6 +355,11 @@ input.search {
   transition: width 0.3s ease;
 }
 
+.export-actions {
+  display: flex;
+  gap: 6px;
+}
+
 .banner {
   border-radius: 8px;
   padding: 8px 12px;

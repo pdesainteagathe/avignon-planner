@@ -1,6 +1,57 @@
+import { useState } from 'react'
 import type { PlanResult, UnscheduledReason } from '../lib/planning'
 import { formatDay, formatRange, formatTime } from '../lib/time'
 import { isFillingUp, seatLabel, seatStatus } from '../lib/seats'
+import { toICS, toPlainText } from '../lib/export'
+
+function ExportButtons({ result }: { result: PlanResult }) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = async () => {
+    const text = toPlainText(result)
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      try {
+        document.execCommand('copy')
+      } catch {
+        /* ignore */
+      }
+      ta.remove()
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1600)
+  }
+
+  const downloadIcs = () => {
+    const blob = new Blob([toICS(result)], { type: 'text/calendar;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'planning-avignon.ics'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className="export-actions">
+      <button className="add-btn small" onClick={copy} title="Copier le planning en texte">
+        {copied ? '✓ Copié' : '📋 Copier'}
+      </button>
+      <button className="add-btn small" onClick={downloadIcs} title="Télécharger pour ton agenda">
+        📅 .ics
+      </button>
+    </div>
+  )
+}
 
 const REASON_LABEL: Record<UnscheduledReason, string> = {
   excluded: 'Désactivée',
@@ -36,10 +87,14 @@ export function PlanningView({ result }: Props) {
 
   const pct = result.maxWeight > 0 ? Math.round((result.totalWeight / result.maxWeight) * 100) : 0
   const scheduledCount = result.scheduled.length
+  const hasPlan = scheduledCount > 0 || result.breaks.length > 0
 
   return (
     <section className="card planning">
-      <h2>Planning proposé</h2>
+      <div className="card-head">
+        <h2>Planning proposé</h2>
+        {hasPlan && <ExportButtons result={result} />}
+      </div>
 
       <div className="score">
         <div className="score-head">
