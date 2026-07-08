@@ -6,8 +6,7 @@ import { plan, type PlanResult } from './lib/planning'
 import type { VenueCoords } from './lib/travel'
 import { formatUpdated } from './lib/time'
 import { PresenceEditor } from './components/PresenceEditor'
-import { CatalogBrowser } from './components/CatalogBrowser'
-import { Wishlist } from './components/Wishlist'
+import { PieceSelector } from './components/PieceSelector'
 import { PlanningView } from './components/PlanningView'
 import { Stepper } from './components/Stepper'
 
@@ -88,10 +87,6 @@ export default function App() {
     return plan(catalog, wishlist, windows, settings, venues)
   }, [catalog, wishlist, windows, settings, venues])
 
-  const addToWishlist = (showId: string) => {
-    setWishlist((w) => (w.some((x) => x.showId === showId) ? w : [...w, { showId }]))
-  }
-
   const wishlistCount = wishlist.filter((w) => !w.excluded).length
 
   return (
@@ -114,16 +109,13 @@ export default function App() {
       <div className="wizard">
         {step === 0 && <PresenceEditor windows={windows} onChange={setWindows} />}
         {step === 1 && (
-          <div className="step-stack">
-            <CatalogBrowser catalog={catalog} wishlist={wishlist} onAdd={addToWishlist} />
-            <Wishlist
-              catalog={catalog}
-              wishlist={wishlist}
-              onChange={setWishlist}
-              favoritesCount={favorites.length}
-              onLoadFavorites={loadFavorites}
-            />
-          </div>
+          <PieceSelector
+            catalog={catalog}
+            wishlist={wishlist}
+            onChange={setWishlist}
+            favoritesCount={favorites.length}
+            onLoadFavorites={loadFavorites}
+          />
         )}
         {step === 2 && <Settings settings={settings} onChange={setSettings} />}
         {step === 3 && (
