@@ -9,6 +9,20 @@ function newId(): string {
   return crypto.randomUUID()
 }
 
+const FESTIVAL_FIRST = '2026-07-04'
+const FESTIVAL_LAST = '2026-07-25'
+
+/** Next calendar day after an ISO date, clamped to the festival's last day. */
+function nextDay(iso: string): string {
+  const d = new Date(`${iso}T12:00:00`)
+  d.setDate(d.getDate() + 1)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const next = `${y}-${m}-${day}`
+  return next > FESTIVAL_LAST ? FESTIVAL_LAST : next
+}
+
 // Tell password managers (Dashlane / 1Password / LastPass) to leave these date &
 // time fields alone — no autofill icons on them.
 const noPwManager = {
@@ -28,9 +42,10 @@ export function PresenceEditor({ windows, onChange }: Props) {
       ...windows,
       {
         id: newId(),
-        date: last?.date ?? '2026-07-08',
-        start: '10:00',
-        end: '23:59',
+        // Propose the day after the last one, with its same time range.
+        date: last ? nextDay(last.date) : '2026-07-08',
+        start: last?.start ?? '10:00',
+        end: last?.end ?? '23:59',
       },
     ])
   }
@@ -52,8 +67,8 @@ export function PresenceEditor({ windows, onChange }: Props) {
             <input
               type="date"
               value={w.date}
-              min="2026-07-04"
-              max="2026-07-25"
+              min={FESTIVAL_FIRST}
+              max={FESTIVAL_LAST}
               onChange={(e) => update(w.id, { date: e.target.value })}
               {...noPwManager}
             />
