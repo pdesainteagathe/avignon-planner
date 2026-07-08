@@ -13,6 +13,7 @@
     "scrape": "node scraper/scrape.mjs",
     "scrape:favorites": "node scraper/addFavorites.mjs",
     "scrape:venues": "node scraper/venues.mjs",
+    "icons": "node scripts/icons.mjs",
     "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
