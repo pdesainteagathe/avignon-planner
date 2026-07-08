@@ -9,6 +9,15 @@ function newId(): string {
   return crypto.randomUUID()
 }
 
+// Tell password managers (Dashlane / 1Password / LastPass) to leave these date &
+// time fields alone — no autofill icons on them.
+const noPwManager = {
+  autoComplete: 'off',
+  'data-form-type': 'other',
+  'data-lpignore': 'true',
+  'data-1p-ignore': 'true',
+} as const
+
 export function PresenceEditor({ windows, onChange }: Props) {
   const update = (id: string, patch: Partial<PresenceWindow>) =>
     onChange(windows.map((w) => (w.id === id ? { ...w, ...patch } : w)))
@@ -46,18 +55,21 @@ export function PresenceEditor({ windows, onChange }: Props) {
               min="2026-07-04"
               max="2026-07-25"
               onChange={(e) => update(w.id, { date: e.target.value })}
+              {...noPwManager}
             />
             <span className="from">de</span>
             <input
               type="time"
               value={w.start}
               onChange={(e) => update(w.id, { start: e.target.value })}
+              {...noPwManager}
             />
             <span className="to">à</span>
             <input
               type="time"
               value={w.end}
               onChange={(e) => update(w.id, { end: e.target.value })}
+              {...noPwManager}
             />
             <button className="icon-btn" title="Supprimer" onClick={() => remove(w.id)}>
               ✕

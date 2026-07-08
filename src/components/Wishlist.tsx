@@ -38,17 +38,17 @@ export function Wishlist({
         {favoritesCount > 0 && onLoadFavorites && (
           <button
             className="add-btn small"
-            title="Remplace la liste par ma sélection pré-établie"
+            title="Charge un exemple de sélection (que tu peux ensuite modifier)"
             onClick={() => {
               if (
                 wishlist.length === 0 ||
-                confirm(`Remplacer la liste actuelle par ma sélection (${favoritesCount} pièces) ?`)
+                confirm(`Remplacer la liste actuelle par l’exemple de sélection (${favoritesCount} pièces) ?`)
               ) {
                 onLoadFavorites()
               }
             }}
           >
-            ★ Charger ma sélection ({favoritesCount})
+            ★ Exemple de sélection ({favoritesCount})
           </button>
         )}
       </div>
