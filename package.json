@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "scrape": "node scraper/scrape.mjs"
+    "scrape": "node scraper/scrape.mjs",
+    "scrape:favorites": "node scraper/addFavorites.mjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0",

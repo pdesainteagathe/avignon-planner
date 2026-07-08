@@ -6,7 +6,10 @@ const CRITICAL = 5
 const LOW = 15
 
 export function seatStatus(seatsLeft: number | undefined): SeatStatus {
-  if (seatsLeft == null) return 'unknown'
+  // 0 (or missing) means "not published" for that venue — a bookable show shows
+  // 0 seats when the count isn't tracked. A true sell-out is available:false and
+  // never reaches the display, so a shown 0 is always "unknown", not "critical".
+  if (seatsLeft == null || seatsLeft <= 0) return 'unknown'
   if (seatsLeft <= CRITICAL) return 'critical'
   if (seatsLeft <= LOW) return 'low'
   return 'plenty'
