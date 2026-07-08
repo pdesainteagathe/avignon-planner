@@ -34,7 +34,7 @@ export function Wishlist({
   return (
     <section className="card">
       <div className="card-head">
-        <h2>3 · Ordre de préférence</h2>
+        <h2>Ordre de préférence</h2>
         {favoritesCount > 0 && onLoadFavorites && (
           <button
             className="add-btn small"

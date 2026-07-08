@@ -75,6 +75,8 @@ const REASON_CLASS: Record<UnscheduledReason, string> = {
 interface Props {
   result: PlanResult | null
   updatedAt?: string | null
+  booked?: Record<string, boolean>
+  onToggleBooked?: (perfId: string) => void
 }
 
 function Freshness({ updatedAt }: { updatedAt?: string | null }) {
@@ -95,7 +97,7 @@ function Freshness({ updatedAt }: { updatedAt?: string | null }) {
   )
 }
 
-export function PlanningView({ result, updatedAt }: Props) {
+export function PlanningView({ result, updatedAt, booked = {}, onToggleBooked }: Props) {
   if (!result) {
     return (
       <section className="card planning">
@@ -110,6 +112,7 @@ export function PlanningView({ result, updatedAt }: Props) {
 
   const pct = result.maxWeight > 0 ? Math.round((result.totalWeight / result.maxWeight) * 100) : 0
   const scheduledCount = result.scheduled.length
+  const bookedCount = result.scheduled.filter((it) => booked[it.perfId]).length
   const hasPlan = scheduledCount > 0 || result.breaks.length > 0
 
   return (
@@ -126,7 +129,12 @@ export function PlanningView({ result, updatedAt }: Props) {
             {scheduledCount} pièce{scheduledCount > 1 ? 's' : ''} casée
             {scheduledCount > 1 ? 's' : ''}
           </strong>
-          <span>Satisfaction {pct}%</span>
+          <span>
+            {bookedCount > 0 && (
+              <span className="booked-count">✓ {bookedCount} réservée{bookedCount > 1 ? 's' : ''} · </span>
+            )}
+            Satisfaction {pct}%
+          </span>
         </div>
         <div className="score-bar">
           <div className="score-fill" style={{ width: `${pct}%` }} />
@@ -170,15 +178,19 @@ export function PlanningView({ result, updatedAt }: Props) {
           <div className="day-col" key={day.dayKey}>
             <h3>{formatDay(day.entries[0].start)}</h3>
             <ul className="slots">
-              {day.entries.map((entry) =>
-                entry.kind === 'break' ? (
-                  <li className="slot break" key={`b-${entry.start}`}>
-                    <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
-                    <span className="slot-title">🍽️ {entry.label}</span>
-                    <span className="slot-venue">temps libre réservé</span>
-                  </li>
-                ) : (
-                  <li className="slot" key={entry.perfId}>
+              {day.entries.map((entry) => {
+                if (entry.kind === 'break') {
+                  return (
+                    <li className="slot break" key={`b-${entry.start}`}>
+                      <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
+                      <span className="slot-title">🍽️ {entry.label}</span>
+                      <span className="slot-venue">temps libre réservé</span>
+                    </li>
+                  )
+                }
+                const isBooked = !!booked[entry.perfId]
+                return (
+                  <li className={`slot${isBooked ? ' booked' : ''}`} key={entry.perfId}>
                     <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
                     <span className="slot-title">
                       <span className="mini-rank">#{entry.rank + 1}</span> {entry.show.title}
@@ -204,9 +216,24 @@ export function PlanningView({ result, updatedAt }: Props) {
                         <span className="walk"> · 🚶 {entry.walkFromPrevMin} min</span>
                       )}
                     </span>
+                    <span className="slot-actions">
+                      {entry.show.ticketUrl && !isBooked && (
+                        <a className="book-link" href={entry.show.ticketUrl} target="_blank" rel="noreferrer">
+                          🎟 Réserver
+                        </a>
+                      )}
+                      {onToggleBooked && (
+                        <button
+                          className={`book-btn${isBooked ? ' done' : ''}`}
+                          onClick={() => onToggleBooked(entry.perfId)}
+                        >
+                          {isBooked ? '✓ Réservé — annuler' : 'J’ai réservé'}
+                        </button>
+                      )}
+                    </span>
                   </li>
-                ),
-              )}
+                )
+              })}
             </ul>
           </div>
         ))}

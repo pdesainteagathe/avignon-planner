@@ -9,6 +9,9 @@ import { PresenceEditor } from './components/PresenceEditor'
 import { CatalogBrowser } from './components/CatalogBrowser'
 import { Wishlist } from './components/Wishlist'
 import { PlanningView } from './components/PlanningView'
+import { Stepper } from './components/Stepper'
+
+const STEP_LABELS = ['Mes créneaux', 'Les pièces', 'Les options', 'Planning']
 
 export default function App() {
   const initial = loadState()
@@ -18,6 +21,10 @@ export default function App() {
   const [settings, setSettings] = useState<PlannerSettings>(initial.settings)
   const [favorites, setFavorites] = useState<string[]>([])
   const [venues, setVenues] = useState<VenueCoords>({})
+  const [booked, setBooked] = useState<Record<string, boolean>>(initial.booked)
+  const [step, setStep] = useState(
+    initial.windows.length > 0 && initial.wishlist.length > 0 ? 3 : 0,
+  )
   const seededRef = useRef(false)
 
   // Load the real scraped catalog if present (public/catalog.json); else keep sample.
@@ -70,8 +77,11 @@ export default function App() {
   }, [favorites, catalog, wishlist])
 
   useEffect(() => {
-    saveState({ windows, wishlist, settings })
-  }, [windows, wishlist, settings])
+    saveState({ windows, wishlist, settings, booked })
+  }, [windows, wishlist, settings, booked])
+
+  const toggleBooked = (perfId: string) =>
+    setBooked((b) => ({ ...b, [perfId]: !b[perfId] }))
 
   const result: PlanResult | null = useMemo(() => {
     if (windows.length === 0 || wishlist.length === 0) return null
@@ -82,6 +92,8 @@ export default function App() {
     setWishlist((w) => (w.some((x) => x.showId === showId) ? w : [...w, { showId }]))
   }
 
+  const wishlistCount = wishlist.filter((w) => !w.excluded).length
+
   return (
     <div className="app">
       <header className="app-header">
@@ -89,7 +101,7 @@ export default function App() {
           <h1>🎭 Planificateur — Festival Off d’Avignon</h1>
           <p className="subtitle">
             Ton planning de réservation optimal : un maximum de pièces qui te
-            plaisent, 30 min de battement, sans conflit d’horaire.
+            plaisent, battements de marche, sans conflit d’horaire.
           </p>
         </div>
         <div className="catalog-badge" title={catalog.source}>
@@ -97,22 +109,48 @@ export default function App() {
         </div>
       </header>
 
-      <div className="layout">
-        <div className="col-config">
-          <PresenceEditor windows={windows} onChange={setWindows} />
-          <CatalogBrowser catalog={catalog} wishlist={wishlist} onAdd={addToWishlist} />
-          <Wishlist
-            catalog={catalog}
-            wishlist={wishlist}
-            onChange={setWishlist}
-            favoritesCount={favorites.length}
-            onLoadFavorites={loadFavorites}
+      <Stepper steps={STEP_LABELS} current={step} onJump={setStep} />
+
+      <div className="wizard">
+        {step === 0 && <PresenceEditor windows={windows} onChange={setWindows} />}
+        {step === 1 && (
+          <div className="step-stack">
+            <CatalogBrowser catalog={catalog} wishlist={wishlist} onAdd={addToWishlist} />
+            <Wishlist
+              catalog={catalog}
+              wishlist={wishlist}
+              onChange={setWishlist}
+              favoritesCount={favorites.length}
+              onLoadFavorites={loadFavorites}
+            />
+          </div>
+        )}
+        {step === 2 && <Settings settings={settings} onChange={setSettings} />}
+        {step === 3 && (
+          <PlanningView
+            result={result}
+            updatedAt={formatUpdated(catalog.generatedAt)}
+            booked={booked}
+            onToggleBooked={toggleBooked}
           />
-          <Settings settings={settings} onChange={setSettings} />
-        </div>
-        <div className="col-planning">
-          <PlanningView result={result} updatedAt={formatUpdated(catalog.generatedAt)} />
-        </div>
+        )}
+      </div>
+
+      <div className="wizard-nav">
+        {step > 0 ? (
+          <button className="nav-btn ghost" onClick={() => setStep(step - 1)}>
+            ← {step === 3 ? 'Modifier mes paramètres' : 'Précédent'}
+          </button>
+        ) : (
+          <span />
+        )}
+        {step < 3 && (
+          <button className="nav-btn primary" onClick={() => setStep(step + 1)}>
+            {step === 2 ? 'Voir mon planning →' : 'Suivant →'}
+            {step === 0 && <span className="nav-hint">{windows.length} jour{windows.length > 1 ? 's' : ''}</span>}
+            {step === 1 && <span className="nav-hint">{wishlistCount} pièce{wishlistCount > 1 ? 's' : ''}</span>}
+          </button>
+        )}
       </div>
 
       <footer className="app-footer">
@@ -131,7 +169,7 @@ function Settings({
 }) {
   return (
     <section className="card">
-      <h2>4 · Réglages</h2>
+      <h2>Options</h2>
       <div className="setting-row">
         <label>
           Stratégie

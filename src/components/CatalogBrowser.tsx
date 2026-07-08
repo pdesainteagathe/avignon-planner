@@ -50,7 +50,7 @@ export function CatalogBrowser({ catalog, wishlist, onAdd }: Props) {
 
   return (
     <section className="card">
-      <h2>2 · Choisir les pièces</h2>
+      <h2>Choisir les pièces</h2>
       <p className="hint">
         Cherche puis ajoute les spectacles qui t’intéressent. Tu les classeras
         par préférence à l’étape 3.

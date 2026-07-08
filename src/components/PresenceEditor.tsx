@@ -54,7 +54,7 @@ export function PresenceEditor({ windows, onChange }: Props) {
 
   return (
     <section className="card">
-      <h2>1 · Mes créneaux de présence</h2>
+      <h2>Mes créneaux de présence</h2>
       <p className="hint">
         Ajoute chaque jour où tu es à Avignon, avec l’heure d’arrivée et de départ.
       </p>

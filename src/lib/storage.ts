@@ -7,12 +7,15 @@ export interface PersistedState {
   windows: PresenceWindow[]
   wishlist: WishItem[]
   settings: PlannerSettings
+  /** Performances the user has marked as booked (perfId -> true). */
+  booked: Record<string, boolean>
 }
 
 const EMPTY: PersistedState = {
   windows: [],
   wishlist: [],
   settings: DEFAULT_SETTINGS,
+  booked: {},
 }
 
 export function loadState(): PersistedState {
@@ -24,6 +27,7 @@ export function loadState(): PersistedState {
       windows: parsed.windows ?? [],
       wishlist: parsed.wishlist ?? [],
       settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
+      booked: parsed.booked ?? {},
     }
   } catch {
     return EMPTY
