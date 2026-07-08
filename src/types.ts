@@ -6,11 +6,19 @@ export interface Performance {
   /** ISO 8601 local datetime of the start, e.g. "2026-07-10T14:30". */
   start: string
   /**
-   * Public availability. `false` means known sold out ("complet").
-   * `undefined`/`true` means bookable (or unknown → treated as bookable).
+   * Ticket'Off availability for this date:
+   * - `online`: bookable online, seats remaining (`seatsLeft`).
+   * - `quota`: online quota reached ("quota atteint") — not bookable online,
+   *   but often still available at the box office.
+   * - `closed`: online sale closed, relâche or past date.
+   */
+  status?: 'online' | 'quota' | 'closed'
+  /**
+   * Schedulable at all (online or box-office). `false` = closed/past.
+   * Kept for convenience; derived from `status`.
    */
   available?: boolean
-  /** Remaining seats, when scraped from Ticket'Off. */
+  /** Remaining online seats (only when `status === 'online'`). */
   seatsLeft?: number
 }
 
@@ -86,6 +94,8 @@ export interface PlannerSettings {
   weightMode: WeightMode
   meals: MealBreak[]
   travel: TravelSettings
+  /** Only schedule séances bookable online (exclude "quota atteint"). */
+  onlineOnly: boolean
 }
 
 export const DEFAULT_TRAVEL: TravelSettings = {
@@ -105,4 +115,5 @@ export const DEFAULT_SETTINGS: PlannerSettings = {
   weightMode: 'balanced',
   meals: DEFAULT_MEALS,
   travel: DEFAULT_TRAVEL,
+  onlineOnly: false,
 }

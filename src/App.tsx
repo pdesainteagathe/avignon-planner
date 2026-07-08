@@ -174,6 +174,17 @@ function Settings({
         )}
       </div>
       <div className="setting-row">
+        <span className="setting-label">Disponibilités</span>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={settings.onlineOnly}
+            onChange={(e) => onChange({ ...settings, onlineOnly: e.target.checked })}
+          />
+          Uniquement réservable en ligne (exclure les « quota atteint »)
+        </label>
+      </div>
+      <div className="setting-row">
         <span className="setting-label">Pauses réservées</span>
         {settings.meals.map((meal, i) => (
           <label key={meal.id} className="check-row">

@@ -3,7 +3,8 @@ import { formatDay, formatRange } from './time'
 
 const REASON_SHORT: Record<UnscheduledReason, string> = {
   excluded: 'désactivée',
-  'sold-out': 'complet',
+  'sold-out': 'vente clôturée',
+  quota: 'quota en ligne atteint',
   'outside-windows': 'hors créneaux',
   'no-performances': 'pas de représentation',
   conflict: 'conflit horaire',
@@ -19,9 +20,13 @@ export function toPlainText(result: PlanResult): string {
       if (e.kind === 'break') {
         lines.push(`  ${formatRange(e.start, e.end)}   ${e.label} (temps libre)`)
       } else {
-        const seats =
-          e.seatsLeft && e.seatsLeft > 0 && e.seatsLeft <= 15 ? `  ⚠️ ${e.seatsLeft} places` : ''
-        lines.push(`  ${formatRange(e.start, e.end)}   ${e.show.title} — ${e.show.venue}${seats}`)
+        const tag =
+          e.status === 'quota'
+            ? '  🎫 quota atteint · guichet'
+            : e.seatsLeft && e.seatsLeft > 0 && e.seatsLeft <= 15
+              ? `  ⚠️ ${e.seatsLeft} places`
+              : ''
+        lines.push(`  ${formatRange(e.start, e.end)}   ${e.show.title} — ${e.show.venue}${tag}`)
       }
     }
     lines.push('')
@@ -62,8 +67,13 @@ export function toICS(result: PlanResult): string {
     lines.push('END:VEVENT')
   }
   for (const it of result.scheduled) {
-    const seats = it.seatsLeft && it.seatsLeft > 0 ? ` · ${it.seatsLeft} places restantes` : ''
-    event(`show-${it.perfId}@avignon-planner`, it.start, it.end, it.show.title, it.show.venue, `Choix #${it.rank + 1}${seats}`)
+    const note =
+      it.status === 'quota'
+        ? ' · quota en ligne atteint (guichet)'
+        : it.seatsLeft && it.seatsLeft > 0
+          ? ` · ${it.seatsLeft} places restantes`
+          : ''
+    event(`show-${it.perfId}@avignon-planner`, it.start, it.end, it.show.title, it.show.venue, `Choix #${it.rank + 1}${note}`)
   }
   for (const b of result.breaks) {
     event(`break-${b.start}@avignon-planner`, b.start, b.end, `🍽️ ${b.label} (temps libre)`)

@@ -55,7 +55,8 @@ function ExportButtons({ result }: { result: PlanResult }) {
 
 const REASON_LABEL: Record<UnscheduledReason, string> = {
   excluded: 'Désactivée',
-  'sold-out': 'Complet sur toutes les dates',
+  'sold-out': 'Vente clôturée / indisponible sur toutes les dates',
+  quota: 'Quota en ligne atteint (guichet possible)',
   'outside-windows': 'Aucune représentation dans tes créneaux',
   'no-performances': 'Pas de représentation au programme',
   conflict: 'Conflit d’horaire — écartée au profit de choix mieux classés',
@@ -64,6 +65,7 @@ const REASON_LABEL: Record<UnscheduledReason, string> = {
 const REASON_CLASS: Record<UnscheduledReason, string> = {
   excluded: 'muted',
   'sold-out': 'warn',
+  quota: 'info',
   'outside-windows': 'warn',
   'no-performances': 'warn',
   conflict: 'info',
@@ -158,10 +160,14 @@ export function PlanningView({ result }: Props) {
                     <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
                     <span className="slot-title">
                       <span className="mini-rank">#{entry.rank + 1}</span> {entry.show.title}
-                      {seatLabel(entry.seatsLeft) && (
-                        <span className={`seats ${seatStatus(entry.seatsLeft)}`}>
-                          {seatLabel(entry.seatsLeft)}
-                        </span>
+                      {entry.status === 'quota' ? (
+                        <span className="seats quota">🎫 quota atteint · guichet</span>
+                      ) : (
+                        seatLabel(entry.seatsLeft) && (
+                          <span className={`seats ${seatStatus(entry.seatsLeft)}`}>
+                            {seatLabel(entry.seatsLeft)}
+                          </span>
+                        )
                       )}
                     </span>
                     <span className="slot-venue">

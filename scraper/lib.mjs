@@ -95,13 +95,18 @@ export function parsePerformances(html, defaultTime) {
     const time = parseTime(c.attr('data-heure')) || defaultTime || '00:00'
     const canReserve = c.attr('data-can-reserve') === '1'
     const status = c.attr('data-status')
-    const seats = parseInt(c.attr('data-nb-place') || '', 10)
+    const qte = parseInt(c.attr('data-nb-place') || '', 10) // online seats left
+    // qte is the ONLINE quota remaining. 0 with an open sale = "quota atteint"
+    // (bookable at the box office, not online), not "no data".
+    let st
+    if (status === 'available' && canReserve) st = qte > 0 ? 'online' : 'quota'
+    else st = 'closed'
     perfs.push({
       id: c.attr('id') || `${date}`,
       start: `${date}T${time}`,
-      available: canReserve && status === 'available',
-      // Some venues don't publish counts (0) — store undefined, not a fake 0.
-      seatsLeft: Number.isFinite(seats) && seats > 0 ? seats : undefined,
+      status: st,
+      available: st !== 'closed',
+      seatsLeft: st === 'online' ? qte : undefined,
     })
   })
   return perfs

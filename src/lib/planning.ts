@@ -14,6 +14,7 @@ import { travelBufferMin, walkMinutes, type TravelConfig, type VenueCoords } fro
 export type UnscheduledReason =
   | 'excluded'
   | 'sold-out'
+  | 'quota' // only "quota atteint" séances remain, excluded by online-only mode
   | 'outside-windows'
   | 'no-performances'
   | 'conflict'
@@ -26,6 +27,7 @@ export interface ScheduledItem {
   rank: number
   weight: number
   seatsLeft?: number
+  status?: 'online' | 'quota' | 'closed'
 }
 
 export interface UnscheduledItem {
@@ -130,17 +132,22 @@ export function plan(
     }
     let anyAvailable = false
     let anyFitting = false
+    let anyQuotaExcluded = false
     for (const perf of show.performances) {
-      if (perf.available === false) continue
+      if (perf.available === false) continue // closed / past
       anyAvailable = true
       const start = isoToMs(perf.start)
       const end = addMinutes(start, show.durationMin)
       if (!fitsAnyWindow(start, end, windowsMs)) continue
+      if (settings.onlineOnly && perf.status === 'quota') {
+        anyQuotaExcluded = true
+        continue
+      }
       anyFitting = true
       candidates.push({ showId: show.id, perfId: perf.id, start, end, weight, venueKey: show.venue })
     }
     if (!anyAvailable) blocked.set(show.id, 'sold-out')
-    else if (!anyFitting) blocked.set(show.id, 'outside-windows')
+    else if (!anyFitting) blocked.set(show.id, anyQuotaExcluded ? 'quota' : 'outside-windows')
   })
 
   const { candidates: mealCands, labels: mealLabels } = mealCandidates(windows, settings.meals)
@@ -165,6 +172,7 @@ export function plan(
       rank: rankOf.get(c.showId)!,
       weight: c.weight,
       seatsLeft: perf?.seatsLeft,
+      status: perf?.status,
     }
   })
   scheduled.sort((a, b) => a.start - b.start)

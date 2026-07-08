@@ -106,6 +106,32 @@ describe('plan (integration on sample catalog)', () => {
     expect(result.breaks.some((b) => b.label === 'Déjeuner')).toBe(true)
   })
 
+  it('handles "quota atteint" séances per the online-only setting', () => {
+    const catalog = {
+      source: 'test',
+      shows: [
+        {
+          id: 'q',
+          title: 'Quota partout',
+          venue: 'V',
+          durationMin: 60,
+          performances: [
+            { id: 'q1', start: '2026-07-08T14:00', status: 'quota' as const, available: true },
+          ],
+        },
+      ],
+    }
+    const win = [{ id: 'w', date: '2026-07-08', start: '10:00', end: '18:00' }]
+    // Default: quota séances are still scheduled (box office), flagged.
+    const inc = plan(catalog, [{ showId: 'q' }], win, DEFAULT_SETTINGS)
+    expect(inc.scheduled.length).toBe(1)
+    expect(inc.scheduled[0].status).toBe('quota')
+    // Online-only: excluded, with the dedicated reason.
+    const online = plan(catalog, [{ showId: 'q' }], win, { ...DEFAULT_SETTINGS, onlineOnly: true })
+    expect(online.scheduled.length).toBe(0)
+    expect(online.unscheduled[0].reason).toBe('quota')
+  })
+
   it('sanity: satisfaction never exceeds the theoretical max', () => {
     expect(result.totalWeight).toBeLessThanOrEqual(result.maxWeight)
     expect(isoToMs('2026-07-08T10:00')).toBeLessThan(isoToMs('2026-07-08T10:01'))

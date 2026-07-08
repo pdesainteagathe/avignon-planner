@@ -492,6 +492,11 @@ input.search {
   color: var(--bad);
   border: 1px solid rgba(248, 113, 113, 0.5);
 }
+.seats.quota {
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--info);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+}
 .banner.urgent {
   background: rgba(248, 113, 113, 0.1);
   border: 1px solid rgba(248, 113, 113, 0.4);
