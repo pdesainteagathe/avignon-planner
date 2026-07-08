@@ -89,22 +89,30 @@ export function PlanningView({ result }: Props) {
       <div className="days">
         {result.days.map((day) => (
           <div className="day-col" key={day.dayKey}>
-            <h3>{formatDay(day.items[0].start)}</h3>
+            <h3>{formatDay(day.entries[0].start)}</h3>
             <ul className="slots">
-              {day.items.map((it) => (
-                <li className="slot" key={it.perfId}>
-                  <span className="slot-time">{formatRange(it.start, it.end)}</span>
-                  <span className="slot-title">
-                    <span className="mini-rank">#{it.rank + 1}</span> {it.show.title}
-                    {seatLabel(it.seatsLeft) && (
-                      <span className={`seats ${seatStatus(it.seatsLeft)}`}>
-                        {seatLabel(it.seatsLeft)}
-                      </span>
-                    )}
-                  </span>
-                  <span className="slot-venue">{it.show.venue}</span>
-                </li>
-              ))}
+              {day.entries.map((entry) =>
+                entry.kind === 'break' ? (
+                  <li className="slot break" key={`b-${entry.start}`}>
+                    <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
+                    <span className="slot-title">🍽️ {entry.label}</span>
+                    <span className="slot-venue">temps libre réservé</span>
+                  </li>
+                ) : (
+                  <li className="slot" key={entry.perfId}>
+                    <span className="slot-time">{formatRange(entry.start, entry.end)}</span>
+                    <span className="slot-title">
+                      <span className="mini-rank">#{entry.rank + 1}</span> {entry.show.title}
+                      {seatLabel(entry.seatsLeft) && (
+                        <span className={`seats ${seatStatus(entry.seatsLeft)}`}>
+                          {seatLabel(entry.seatsLeft)}
+                        </span>
+                      )}
+                    </span>
+                    <span className="slot-venue">{entry.show.venue}</span>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         ))}

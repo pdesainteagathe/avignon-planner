@@ -71,6 +71,25 @@ describe('optimize', () => {
     expect(r.chosen.find((x) => x.showId === 'a')!.perfId).toBe('aL')
   })
 
+  it('applies no buffer around a break (isBreak)', () => {
+    // Show a ends 11:30, break 11:30–12:30 (0 gap ok), show b 12:30 (0 gap ok).
+    const a = c('a', 'a1', 600, 90, 5) // 10:00–11:30
+    const brk: Candidate = { showId: 'lunch', perfId: 'l1', start: 690 * 60_000, end: 750 * 60_000, weight: 1000, isBreak: true }
+    const b = c('b', 'b1', 750, 60, 5) // 12:30–13:30
+    const r = optimize([a, brk, b], BUFFER)
+    expect(r.chosen.map((x) => x.showId)).toEqual(['a', 'lunch', 'b'])
+  })
+
+  it('still enforces the buffer between two shows even when a break exists elsewhere', () => {
+    // Two shows 15 min apart cannot both be taken; a break earlier is irrelevant.
+    const brk: Candidate = { showId: 'lunch', perfId: 'l1', start: 720 * 60_000, end: 780 * 60_000, weight: 1000, isBreak: true }
+    const a = c('a', 'a1', 900, 90, 5) // 15:00–16:30
+    const b = c('b', 'b1', 1005, 60, 5) // 16:45 → only 15 min after a
+    const r = optimize([brk, a, b], BUFFER)
+    const shows = r.chosen.filter((x) => x.showId !== 'lunch')
+    expect(shows.length).toBe(1)
+  })
+
   it('chosen items are sorted by start time', () => {
     const r = optimize(
       [c('b', 'b1', 900, 60, 1), c('a', 'a1', 600, 60, 1)],

@@ -1,17 +1,18 @@
 // Core optimizer.
 //
-// Problem: we have a set of candidate performances. Each candidate belongs to a
-// show and carries that show's satisfaction weight. We must pick a subset such
-// that:
-//   - at most one performance per show is chosen,
-//   - no two chosen performances overlap once each is padded by a buffer
-//     (the user is a single person, in one place at a time),
-// maximizing the total weight of chosen shows (each show counted once).
+// Problem: we have a set of candidate items on a single timeline. Each belongs
+// to a "show" (real show, or a mandatory meal break) and carries a weight. We
+// pick a subset such that:
+//   - at most one item per show is chosen,
+//   - consecutive chosen items are separated by the required gap,
+// maximizing total weight (each show counted once).
+//
+// The gap between two consecutive items is the buffer only when BOTH are real
+// shows; a meal break needs no buffer on either side (it is itself the break).
 //
 // This is the Job Interval Selection Problem (NP-hard in general), but real
 // instances are tiny and heavily constrained, so an exact branch & bound with
-// a greedy warm start solves them instantly. A node cap guarantees termination;
-// if hit, we return the best feasible solution found and flag it approximate.
+// a greedy warm start solves them instantly. A node cap guarantees termination.
 
 export interface Candidate {
   showId: string
@@ -21,6 +22,8 @@ export interface Candidate {
   /** epoch ms (start + duration) */
   end: number
   weight: number
+  /** True for meal breaks: no inter-show buffer applies around them. */
+  isBreak?: boolean
 }
 
 export interface OptimizeResult {
@@ -30,21 +33,22 @@ export interface OptimizeResult {
   approximate: boolean
 }
 
-function conflictFree(a: Candidate, nextStart: number): boolean {
-  return a.start >= nextStart
+/** Required gap (ms) between two consecutive items. */
+function gap(aBreak: boolean, bBreak: boolean, bufferMs: number): number {
+  return aBreak || bBreak ? 0 : bufferMs
 }
 
 /** Greedy feasible solution, used to warm-start the bound. */
 function greedy(items: Candidate[], bufferMs: number): { chosen: Candidate[]; value: number } {
-  // Order by weight desc, then earliest end (leaves room for more).
   const order = [...items].sort((a, b) => b.weight - a.weight || a.end - b.end)
   const chosen: Candidate[] = []
   const used = new Set<string>()
   for (const c of order) {
     if (used.has(c.showId)) continue
-    const clash = chosen.some(
-      (s) => !(c.start >= s.end + bufferMs || s.start >= c.end + bufferMs),
-    )
+    const clash = chosen.some((s) => {
+      const g = gap(!!s.isBreak, !!c.isBreak, bufferMs)
+      return !(c.start >= s.end + g || s.start >= c.end + g)
+    })
     if (clash) continue
     chosen.push(c)
     used.add(c.showId)
@@ -61,8 +65,8 @@ export function optimize(
   const items = [...candidates].sort((a, b) => a.start - b.start || a.end - b.end)
   const n = items.length
 
-  // suffixWeight[i] = sum over distinct shows appearing in items[i..] of that
-  // show's weight. An optimistic (upper) bound on extra value obtainable from i.
+  // suffixWeight[i] = sum over distinct shows in items[i..] of that show's
+  // weight — an optimistic (upper) bound on extra value obtainable from i.
   const suffixWeight = new Array<number>(n + 1).fill(0)
   {
     const seen = new Set<string>()
@@ -82,13 +86,12 @@ export function optimize(
   let nodes = 0
   let approximate = false
 
-  function dfs(i: number, freeAt: number, value: number): void {
+  function dfs(i: number, prevEnd: number, prevBreak: boolean, value: number): void {
     if (approximate) return
     if (++nodes > maxNodes) {
       approximate = true
       return
     }
-    // Bound prune: even taking every remaining distinct show can't beat best.
     if (value + suffixWeight[i] <= best) return
     if (i === n) {
       if (value > best) {
@@ -98,19 +101,19 @@ export function optimize(
       return
     }
     const c = items[i]
-    // Branch 1: take c, if it fits after the current schedule and its show is free.
-    if (conflictFree(c, freeAt) && !used.has(c.showId)) {
+    // Branch 1: take c, if it fits after the previous item and its show is free.
+    if (!used.has(c.showId) && c.start >= prevEnd + gap(prevBreak, !!c.isBreak, bufferMs)) {
       used.add(c.showId)
       chosen.push(c)
-      dfs(i + 1, c.end + bufferMs, value + c.weight)
+      dfs(i + 1, c.end, !!c.isBreak, value + c.weight)
       chosen.pop()
       used.delete(c.showId)
     }
     // Branch 2: skip c.
-    dfs(i + 1, freeAt, value)
+    dfs(i + 1, prevEnd, prevBreak, value)
   }
 
-  dfs(0, -Infinity, 0)
+  dfs(0, -Infinity, false, 0)
 
   return {
     chosen: [...bestChosen].sort((a, b) => a.start - b.start),

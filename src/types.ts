@@ -55,13 +55,33 @@ export interface WishItem {
 
 export type WeightMode = 'balanced' | 'top-priority'
 
+/** A daily free slot to reserve (meal), placed anywhere inside its window. */
+export interface MealBreak {
+  id: string
+  label: string
+  /** "HH:MM" earliest the free slot may start. */
+  windowStart: string
+  /** "HH:MM" latest the free slot may end. */
+  windowEnd: string
+  /** Length of free time to reserve, in minutes. */
+  durationMin: number
+  enabled: boolean
+}
+
 export interface PlannerSettings {
   /** Minimum gap between two consecutive shows, in minutes. */
   bufferMin: number
   weightMode: WeightMode
+  meals: MealBreak[]
 }
+
+export const DEFAULT_MEALS: MealBreak[] = [
+  { id: 'lunch', label: 'Déjeuner', windowStart: '12:00', windowEnd: '14:30', durationMin: 60, enabled: true },
+  { id: 'dinner', label: 'Dîner', windowStart: '19:00', windowEnd: '21:00', durationMin: 60, enabled: true },
+]
 
 export const DEFAULT_SETTINGS: PlannerSettings = {
   bufferMin: 30,
   weightMode: 'balanced',
+  meals: DEFAULT_MEALS,
 }

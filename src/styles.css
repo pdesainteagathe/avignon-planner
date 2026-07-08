@@ -312,6 +312,23 @@ input.search {
 .setting-row select {
   max-width: 320px;
 }
+.setting-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.check-row input {
+  accent-color: var(--accent-2);
+}
 
 /* Planning */
 .planning h2 {
@@ -377,6 +394,20 @@ input.search {
   border-left: 3px solid var(--accent-2);
   border-radius: 8px;
   padding: 8px 12px;
+}
+.slot.break {
+  border-left-color: var(--accent);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--panel-2),
+    var(--panel-2) 10px,
+    rgba(201, 162, 39, 0.06) 10px,
+    rgba(201, 162, 39, 0.06) 20px
+  );
+  opacity: 0.85;
+}
+.slot.break .slot-title {
+  color: var(--accent);
 }
 .slot-time {
   grid-area: time;

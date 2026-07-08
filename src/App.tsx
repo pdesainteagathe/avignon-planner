@@ -146,6 +146,25 @@ function Settings({
           </select>
         </label>
       </div>
+      <div className="setting-row">
+        <span className="setting-label">Pauses réservées</span>
+        {settings.meals.map((meal, i) => (
+          <label key={meal.id} className="check-row">
+            <input
+              type="checkbox"
+              checked={meal.enabled}
+              onChange={(e) => {
+                const meals = settings.meals.map((m, j) =>
+                  j === i ? { ...m, enabled: e.target.checked } : m,
+                )
+                onChange({ ...settings, meals })
+              }}
+            />
+            {meal.label} — {meal.durationMin} min libres entre {meal.windowStart} et{' '}
+            {meal.windowEnd}
+          </label>
+        ))}
+      </div>
     </section>
   )
 }

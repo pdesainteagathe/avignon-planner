@@ -84,6 +84,28 @@ describe('plan (integration on sample catalog)', () => {
     expect(r.unscheduled[0].reason).toBe('sold-out')
   })
 
+  it('reserves a free hour for lunch (12:00–14:30) and dinner (19:00–21:00)', () => {
+    // Day 1 present 10:00–23:59 → lunch + dinner reservable.
+    // Day 2 present 10:00–18:00 → lunch only (dinner window is outside).
+    for (const b of result.breaks) {
+      expect(b.end - b.start).toBe(60 * 60_000)
+      const h = new Date(b.start).getHours()
+      const endH = new Date(b.end).getHours() + new Date(b.end).getMinutes() / 60
+      if (b.label === 'Déjeuner') {
+        expect(h).toBeGreaterThanOrEqual(12)
+        expect(endH).toBeLessThanOrEqual(14.5)
+      } else {
+        expect(h).toBeGreaterThanOrEqual(19)
+        expect(endH).toBeLessThanOrEqual(21)
+      }
+      // No scheduled show may overlap a reserved break.
+      for (const s of result.scheduled) {
+        expect(s.start < b.end && b.start < s.end).toBe(false)
+      }
+    }
+    expect(result.breaks.some((b) => b.label === 'Déjeuner')).toBe(true)
+  })
+
   it('sanity: satisfaction never exceeds the theoretical max', () => {
     expect(result.totalWeight).toBeLessThanOrEqual(result.maxWeight)
     expect(isoToMs('2026-07-08T10:00')).toBeLessThan(isoToMs('2026-07-08T10:01'))
